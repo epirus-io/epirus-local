@@ -9,30 +9,25 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import org.web3j.abi.datatypes.Address
-import org.web3j.crypto.Hash
-import org.web3j.evm.Configuration
-import org.web3j.evm.EmbeddedEthereum
-import org.web3j.evm.PassthroughTracer
 
-class Server{
+class Server {
 
-    val embeddedEthereum: EmbeddedEthereum = EmbeddedEthereum(Configuration(Address("0xc94770007dda54cF92009BFF0dE90c06F603a09f"), 10), PassthroughTracer())
+    val localLedger = LocalLedger()
 
     fun start() {
         val server = embeddedServer(Netty, 8080) {
             routing {
                 post("/") {
                     try {
-                        val req : String = call.receive<String>()
-
-                        val request : Request = Klaxon().parse<Request>(req) ?: throw Exception("Incorrect request: \n $req")
-                        val json_output = Klaxon().toJsonString(Response(request.id, request.jsonrpc, makeCall(request)))
-
-                        call.respondText(json_output, ContentType.Text.Plain)
-                    } catch (e : Exception) {
+                        val jsonRequest: String = call.receive<String>()
+                        val jsonResponse: String = processRequest(jsonRequest)
+                        call.respondText(jsonResponse, ContentType.Text.Plain)
+                    } catch (e: Exception) {
                         e.printStackTrace()
-                        call.respondText("Incorrect request! Check https://github.com/ethereum/wiki/wiki/JSON-RPC\n", ContentType.Text.Plain)
+                        call.respondText(
+                                "Incorrect request or problem when executing it! Check https://github.com/ethereum/wiki/wiki/JSON-RPC\n",
+                                ContentType.Text.Plain
+                        )
                     }
                 }
             }
@@ -40,12 +35,19 @@ class Server{
         server.start(true)
     }
 
-    fun makeCall(request: Request): String {
+    private fun processRequest(jsonRequest: String): String {
+        val request = JsonParser().parse(jsonRequest)
+        val response = makeCall(request)
+        return Klaxon().toJsonString(Response(request.id, request.jsonrpc, response))
+    }
+
+    fun makeCall(request: Request): Any {
         return when (request.method) {
-            "eth_blockNumber" -> embeddedEthereum.ethBlockNumber()
-            "eth_getTransactionCount" -> embeddedEthereum.getTransactionCount(Address(request.params[0]), request.params[1]).toString()
-            "eth_getBalance" -> embeddedEthereum.ethGetBalance(Address(request.params[0]), request.params[1]) ?: "0"
-            else -> return "Not supported yet!"
+            "eth_blockNumber" -> localLedger.eth_blockNumber()
+            "eth_getTransactionCount" -> localLedger.eth_getTransactionCount(request)
+            "eth_getBalance" -> localLedger.eth_getBalance(request)
+            "eth_sendTransaction" -> localLedger.eth_sendTransaction(request) // still not working
+            else -> "Not supported yet!"
         }
     }
 

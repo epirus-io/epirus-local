@@ -42,6 +42,6 @@ dependencies {
 }
 
 application {
-    mainClassName = 'com.epirus.local.AppKt'
+    mainClassName = 'com.epirus.local.ServerKt'
 }
 
