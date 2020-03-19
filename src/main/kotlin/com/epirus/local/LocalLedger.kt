@@ -48,4 +48,17 @@ class LocalLedger {
                 BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
                 requestParams["data"]))
     }
+
+    fun eth_estimateGas(request: Request): Any {
+        val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
+        if (requestParams.size < 7) return "Insufficient parameters"
+        return embeddedEthereum.estimateGas(Transaction(
+                requestParams["from"],
+                BigInteger(requestParams["nonce"]?.removePrefix("0x"), 16),
+                BigInteger(requestParams["gasPrice"]?.removePrefix("0x"), 16),
+                BigInteger(requestParams["gas"]?.removePrefix("0x"), 16),
+                requestParams["to"],
+                BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
+                requestParams["data"]))
+    }
 }
