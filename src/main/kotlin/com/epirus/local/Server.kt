@@ -50,6 +50,8 @@ class Server {
             "eth_estimateGas" -> localLedger.eth_estimateGas(request)
             "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request)
             "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request)
+            "eth_getBlockTransactionCountByHash" -> localLedger.eth_getBlockTransactionCountByHash(request)
+            "eth_getBlockTransactionCountByNumber" -> localLedger.eth_getBlockTransactionCountByNumber(request)
             else -> "Not supported yet!"
         }
     }

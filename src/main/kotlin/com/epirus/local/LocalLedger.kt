@@ -1,6 +1,7 @@
 package com.epirus.local
 
 
+import org.hyperledger.besu.ethereum.core.Hash
 import org.web3j.abi.datatypes.Address
 import org.web3j.evm.Configuration
 import org.web3j.evm.EmbeddedEthereum
@@ -75,5 +76,17 @@ class LocalLedger {
         if (requestParams.size < 2) return "Insufficient parameters"
         val block : EthBlock.Block? = embeddedEthereum.ethBlockByNumber(requestParams[0], requestParams[1].toBoolean())
         return block?.toHashMap(requestParams[1].toBoolean()) ?: "null"
+    }
+
+    fun eth_getBlockTransactionCountByHash(request: Request): Any {
+        val requestParams: List<String> = request.params as List<String>
+        if(requestParams.isEmpty()) return "Insufficient parameters"
+        return embeddedEthereum.ethGetBlockTransactionCountByHash(Hash.fromHexString(requestParams[0]))
+    }
+
+    fun eth_getBlockTransactionCountByNumber(request: Request): Any {
+        val requestParams: List<String> = request.params as List<String>
+        if(requestParams.isEmpty()) return "Insufficient parameters"
+        return embeddedEthereum.ethGetBlockTransactionCountByNumber(requestParams[0].removePrefix("0x").toLong(16))
     }
 }
