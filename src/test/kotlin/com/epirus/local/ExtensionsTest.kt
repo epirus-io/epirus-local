@@ -1,4 +1,4 @@
 package com.epirus.local
 
-class LocalLedgerTest {
+class ExtensionsTest {
 }

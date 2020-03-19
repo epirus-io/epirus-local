@@ -1,10 +1,12 @@
 package com.epirus.local
 
+
 import org.web3j.abi.datatypes.Address
 import org.web3j.evm.Configuration
 import org.web3j.evm.EmbeddedEthereum
 import org.web3j.evm.PassthroughTracer
 import org.web3j.protocol.core.methods.request.Transaction
+import org.web3j.protocol.core.methods.response.EthBlock
 import java.math.BigInteger
 
 class LocalLedger {
@@ -60,5 +62,18 @@ class LocalLedger {
                 requestParams["to"],
                 BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
                 requestParams["data"]))
+    }
+
+    fun eth_getBlockByHash(request: Request): Any {
+        val requestParams: List<String> = request.params as List<String>
+        if (requestParams.size < 2) return "Insufficient parameters"
+        return embeddedEthereum.ethBlockByHash(requestParams[0], requestParams[1].toBoolean()) ?: "null"
+    }
+
+    fun eth_getBlockByNumber(request: Request): Any {
+        val requestParams: List<String> = request.params as List<String>
+        if (requestParams.size < 2) return "Insufficient parameters"
+        val block : EthBlock.Block? = embeddedEthereum.ethBlockByNumber(requestParams[0], requestParams[1].toBoolean())
+        return block?.toHashMap(requestParams[1].toBoolean()) ?: "null"
     }
 }

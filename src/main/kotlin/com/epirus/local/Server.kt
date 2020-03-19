@@ -48,6 +48,8 @@ class Server {
             "eth_getBalance" -> localLedger.eth_getBalance(request)
             "eth_sendTransaction" -> localLedger.eth_sendTransaction(request)
             "eth_estimateGas" -> localLedger.eth_estimateGas(request)
+            "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request)
+            "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request)
             else -> "Not supported yet!"
         }
     }
