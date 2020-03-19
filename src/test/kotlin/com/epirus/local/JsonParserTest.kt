@@ -1,4 +1,4 @@
 package com.epirus.local
 
-class ServerTest {
+class JsonParserTest {
 }

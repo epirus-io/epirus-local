@@ -46,7 +46,7 @@ class Server {
             "eth_blockNumber" -> localLedger.eth_blockNumber()
             "eth_getTransactionCount" -> localLedger.eth_getTransactionCount(request)
             "eth_getBalance" -> localLedger.eth_getBalance(request)
-            "eth_sendTransaction" -> localLedger.eth_sendTransaction(request) // still not working
+            "eth_sendTransaction" -> localLedger.eth_sendTransaction(request)
             else -> "Not supported yet!"
         }
     }
