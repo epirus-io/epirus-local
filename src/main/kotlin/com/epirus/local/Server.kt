@@ -53,6 +53,7 @@ class Server {
             "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request)
             "eth_getBlockTransactionCountByHash" -> localLedger.eth_getBlockTransactionCountByHash(request)
             "eth_getBlockTransactionCountByNumber" -> localLedger.eth_getBlockTransactionCountByNumber(request)
+            "eth_getTransactionReceipt" -> localLedger.eth_getTransactionReceipt(request)
             else -> "Not supported yet!"
         }
     }

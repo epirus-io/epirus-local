@@ -107,6 +107,13 @@ class LocalLedger(val genesisPath: String = "src/main/resources/defaultGenesis.j
         return embeddedEthereum.processTransaction(hexValue)
     }
 
+    fun eth_getTransactionReceipt(request: Request): Any {
+        val requestParams: List<String> = request.params as List<String>
+        if(requestParams.isEmpty()) return "Insufficient parameters"
+        return embeddedEthereum.getTransactionReceipt(requestParams[0].removePrefix("0x"))?.toHashMap() ?: "null"
+    }
+
+
     private fun loadCredentials(address: String?): Credentials {
         val pkey = when(address){
             "0xcFC2BE3d4B50E9b2CAFbDa0779722B1620B8A326" -> "a0a66ef7b7aaaca5750b6e9395344f459d6c1839bb324c7920ad97823707a7d8"
