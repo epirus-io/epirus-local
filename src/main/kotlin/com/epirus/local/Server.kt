@@ -47,6 +47,7 @@ class Server {
             "eth_getTransactionCount" -> localLedger.eth_getTransactionCount(request)
             "eth_getBalance" -> localLedger.eth_getBalance(request)
             "eth_sendTransaction" -> localLedger.eth_sendTransaction(request)
+            "eth_sendRawTransaction" -> localLedger.eth_sendRawTransaction(request)
             "eth_estimateGas" -> localLedger.eth_estimateGas(request)
             "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request)
             "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request)
