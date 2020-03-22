@@ -10,10 +10,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 
-class Server {
-
-    val localLedger = LocalLedger()
-
+class Server(val localLedger: LocalLedger) {
     fun start() {
         val server = embeddedServer(Netty, 8080) {
             routing {
@@ -58,9 +55,4 @@ class Server {
         }
     }
 
-}
-
-fun main(args: Array<String>) {
-    val server: Server = Server()
-    server.start()
 }

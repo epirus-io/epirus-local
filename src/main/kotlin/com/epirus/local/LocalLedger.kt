@@ -1,6 +1,7 @@
 package com.epirus.local
 
 
+import com.epirus.local.cli.Account
 import org.hyperledger.besu.ethereum.core.Hash
 import org.web3j.abi.datatypes.Address
 import org.web3j.crypto.Credentials
@@ -14,23 +15,23 @@ import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.net.URL
+import java.util.stream.Collectors
 
-class LocalLedger(val genesisPath: String = "src/main/resources/defaultGenesis.json") {
+class LocalLedger(val accounts: MutableList<Account>, val genesisPath: String = "src/main/resources/defaultGenesis.json", val init: Boolean = false) {
+
     val embeddedEthereum: EmbeddedEthereum
-
     init {
         embeddedEthereum =
                 EmbeddedEthereum(
                         loadConfig(genesisPath),
                         PassthroughTracer())
+        if(init)
+
+        }
     }
 
     private fun loadConfig(path: String): Configuration {
-        println("[*] Address: 0xcFC2BE3d4B50E9b2CAFbDa0779722B1620B8A326 : 100 Ether")
-        println("-> pkey: a0a66ef7b7aaaca5750b6e9395344f459d6c1839bb324c7920ad97823707a7d8")
-        println("[*] Address: 0x7d6DAFe1f8962B6622203Bb6cdFC1631F88Db17c : 100 Ether")
-        println("-> pkey: f2b1fe8725429ca6c870adfc15d451e552dc64a488af0743baedec182275bf84")
-        return Configuration(Address("0x1"), 0, URL("file:$path"))
+        return Configuration(Address("0x0"), 0, URL("file:$path"))
     }
 
     fun eth_blockNumber(): String = embeddedEthereum.ethBlockNumber()
@@ -115,11 +116,11 @@ class LocalLedger(val genesisPath: String = "src/main/resources/defaultGenesis.j
 
 
     private fun loadCredentials(address: String?): Credentials {
-        val pkey = when(address){
-            "0xcFC2BE3d4B50E9b2CAFbDa0779722B1620B8A326" -> "a0a66ef7b7aaaca5750b6e9395344f459d6c1839bb324c7920ad97823707a7d8"
-            "0x7d6DAFe1f8962B6622203Bb6cdFC1631F88Db17c" -> "f2b1fe8725429ca6c870adfc15d451e552dc64a488af0743baedec182275bf84"
-            else -> throw Exception("Private key not found! Use eth_sendRawTransaction for personal addresses")
-        }
-        return Credentials.create(pkey)
+        val account = accounts.stream().filter{ it.address == address}.map{it.address}.collect(Collectors.toList())
+
+        return if(account.isEmpty())
+            throw Exception("Private key not found! Use eth_sendRawTransaction for personal addresses")
+        else
+            Credentials.create(account[0])
     }
 }

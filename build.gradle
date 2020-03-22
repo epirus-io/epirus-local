@@ -6,6 +6,8 @@ plugins {
     id 'application'
 }
 
+apply plugin: 'kotlin-kapt'
+
 repositories {
     mavenCentral()
     jcenter()
@@ -20,6 +22,7 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
     implementation 'com.beust:klaxon:5.0.1'
+    compile 'info.picocli:picocli:4.2.0'
 
     implementation "io.ktor:ktor-server-netty:$ktor_version"
     implementation "io.ktor:ktor-server-core:$ktor_version"
@@ -42,6 +45,22 @@ dependencies {
 }
 
 application {
-    mainClassName = 'com.epirus.local.ServerKt'
+    mainClassName = 'com.epirus.local.MainKt'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.epirus.local.MainKt'
+    }
+
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+task fatJar(type: Jar){
+    manifest {
+        attributes 'Main-Class': "${mainClassName}"
+    }
+    baseName = "${rootProject.name}"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

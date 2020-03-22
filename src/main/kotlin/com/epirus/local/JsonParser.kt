@@ -19,7 +19,6 @@ import java.io.StringReader
 class JsonParser {
 
     fun parse(request: String): Request {
-        val klaxon = Klaxon()
         var jsonrpc: String = ""
         var id: Long = 0
         var method: String = ""
