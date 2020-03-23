@@ -36,7 +36,7 @@ class CreateCmd : Callable<kotlin.Int> {
         return 0
     }
 
-    private fun createGenesis(accounts: List<Account>): String {
+    fun createGenesis(accounts: List<Account>): String {
         val genesis = File(directory.removeSuffix("/")+"/genesis.json")
         if (genesis.exists()) throw Exception("Genesis file exists!")
         genesis.createNewFile()
@@ -60,7 +60,7 @@ class CreateCmd : Callable<kotlin.Int> {
         return genesis.absolutePath
     }
 
-    private fun generateAccounts() : List<Account> {
+    fun generateAccounts() : List<Account> {
         val accounts = mutableListOf<Account>()
         val charpool : List<Char> = ('a'..'f')+('0'..'9')
 

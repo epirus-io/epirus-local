@@ -14,10 +14,7 @@ import java.util.concurrent.Callable
         subcommands = [CreateCmd::class, LoadCmd::class, picocli.CommandLine.HelpCommand::class]
 )
 class EpirusLocalCLI : Callable<kotlin.Int> {
-
-
     override fun call(): kotlin.Int {
         return 0
     }
-
 }

@@ -2,6 +2,7 @@ package com.epirus.local
 
 
 import com.epirus.local.cli.Account
+import io.ktor.util.hex
 import org.hyperledger.besu.ethereum.chain.GenesisState
 import org.hyperledger.besu.ethereum.core.Hash
 import org.web3j.abi.datatypes.Address
@@ -72,7 +73,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     fun eth_getBlockByNumber(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
-        val block : EthBlock.Block? = embeddedEthereum.ethBlockByNumber(requestParams[0], requestParams[1].toBoolean())
+        val block : EthBlock.Block? = embeddedEthereum.ethBlockByNumber(requestParams[0].removePrefix("0x"), requestParams[1].toBoolean())
         return block?.toHashMap(requestParams[1].toBoolean()) ?: "null"
     }
 
@@ -120,7 +121,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     private fun loadCredentials(address: String?): Credentials {
         val account = accounts.stream()
                 .filter{ it.address == address}
-                .map{it.address}
+                .map{it.privateKey}
                 .collect(Collectors.toList())
 
         return if(account.isEmpty())

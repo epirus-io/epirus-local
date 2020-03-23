@@ -1,15 +1,27 @@
 package com.epirus.local
 
+import com.epirus.local.cli.Account
+import com.epirus.local.cli.CreateCmd
+import org.junit.AfterClass
+import java.io.File
+import java.math.BigInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 class ServerTest {
-/*
-    private val server : Server
 
+    private val server : Server
+    val accounts: List<Account>
+    val genesis : String
     init{
-        server = Server(LocalLedger(accounts = accounts))
+        val createCmd = CreateCmd()
+        createCmd.directory = "src/test/resources/"
+        accounts = createCmd.generateAccounts()
+        genesis = createCmd.createGenesis(accounts)
+        server = Server(LocalLedger(accounts = accounts, genesisPath = genesis))
+        File(genesis).delete()
     }
 
     @Test
@@ -20,14 +32,51 @@ class ServerTest {
 
     @Test
     fun eth_getBalanceTest(){
-        val response = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>("0xc94770007dda54cF92009BFF0dE90c06F603a09f", "latest"), 1))
-        //assertEquals("0x0000000000000000000000000000000000000000000000008ac7230489e80000", response)
+        val response = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[0].address, "latest"), 1))
+        assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d63100000", response)
     }
 
     @Test
-    fun eth_getTransactionCountTest(){
-        //val response = server.makeCall(Request("2.0", "eth_getTransactionCount", listOf<String>("0xc94770007dda54cF92009BFF0dE90c06F603a09f", "latest"), 1))
-        //assertEquals(BigInteger.ZERO, response)
+    fun eth_sendTransaction(){
+        val tx = HashMap<String, Any>()
+        tx["from"] = accounts[0].address
+        tx["to"] = accounts[1].address
+        tx["gas"] = "0x7cfd"
+        tx["gasPrice"] = "0x31413"
+        tx["value"] = "0xfff24f"
+        tx["data"] = ""
+        tx["nonce"] = "0x0"
+        val txHash = server.makeCall(Request("2.0", "eth_sendTransaction", tx, 1))
+
+        assertNotNull(txHash)
+
+        assertEquals(BigInteger.ONE, server.makeCall(
+                Request("2.0",
+                        "eth_getTransactionCount",
+                        listOf<String>(accounts[0].address,
+                                "latest"),
+                        1
+                )))
+
+        val txReceipt = server.makeCall(
+                Request("2.0",
+                        "eth_getTransactionReceipt",
+                        listOf<String>(txHash as String),
+                        1))
+        assertNotNull(txReceipt)
+
+        assertEquals("0x1", server.makeCall(Request("2.0",
+                "eth_getBlockTransactionCountByHash",
+                listOf<String>(
+                        (txReceipt as HashMap<String, String>)["blockHash"]!!
+                ),
+                1)))
+
+        assertEquals("0x1", server.makeCall(Request("2.0",
+                "eth_getBlockTransactionCountByNumber",
+                listOf<String>("0x1"),
+                1)))
+
     }
 
     @Test
@@ -45,11 +94,6 @@ class ServerTest {
         assertEquals("0x00000000000000000000000000000000000000000000000000000000000341ce", response)
     }
 
-    @Test
-    fun eth_getBlockByNumberTest(){
-        val actual = server.makeCall(Request("2.0", "eth_getBlockByNumber", listOf<String>("0", "true"), 1))
-        assertNotEquals("null", actual)
-    }
 
     @Test
     fun eth_getBlockByHashTest(){ // to be done after getting send transaction to work
@@ -63,6 +107,6 @@ class ServerTest {
     }
 
 
- */
+
 
 }
