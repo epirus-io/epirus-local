@@ -117,6 +117,11 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
         return embeddedEthereum.getTransactionReceipt(requestParams[0].removePrefix("0x"))?.toHashMap() ?: "null"
     }
 
+    fun eth_getCode(request: Request): Any {
+        val requestParams: List<String> = request.params as List<String>
+        if (requestParams.size < 2) return "Insufficient parameters"
+        return embeddedEthereum.ethGetCode(Address(requestParams[0].removePrefix("0x")), requestParams[1])
+    }
 
     private fun loadCredentials(address: String?): Credentials {
         val account = accounts.stream()

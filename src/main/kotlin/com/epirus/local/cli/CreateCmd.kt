@@ -33,6 +33,7 @@ class CreateCmd : Callable<kotlin.Int> {
                 LocalLedger(genesisPath = genesisFile)
         }
         Server(localLedger).start()
+        File(genesisFile).delete()
         return 0
     }
 
