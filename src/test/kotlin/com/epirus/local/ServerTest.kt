@@ -3,6 +3,10 @@ package com.epirus.local
 import com.epirus.local.cli.Account
 import com.epirus.local.cli.CreateCmd
 import org.junit.AfterClass
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.utils.Numeric
 import java.io.File
 import java.math.BigInteger
 import kotlin.test.Test
@@ -94,16 +98,38 @@ class ServerTest {
         assertEquals("0x00000000000000000000000000000000000000000000000000000000000341ce", response)
     }
 
-
-    @Test
-    fun eth_getBlockByHashTest(){ // to be done after getting send transaction to work
-
-    }
-
     @Test
     fun eth_sendRawTransactionTest() {
+        val tx = HashMap<String, String>()
+        tx["from"] = accounts[2].address
+        tx["to"] = accounts[3].address
+        tx["gas"] = "0x7cfd"
+        tx["gasPrice"] = "0x31413"
+        tx["value"] = "0xfff24f"
+        tx["data"] = ""
+        tx["nonce"] = "0x0"
+        val rawTransaction = RawTransaction.createTransaction(
+                BigInteger(tx["nonce"]?.removePrefix("0x"), 16),
+                BigInteger(tx["gasPrice"]?.removePrefix("0x"), 16),
+                BigInteger(tx["gas"]?.removePrefix("0x"), 16),
+                tx["to"],
+                BigInteger(tx["value"]?.removePrefix("0x"), 16),
+                tx["data"])
+        val credentials = Credentials.create(accounts[2].privateKey)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
+        val hexValue = Numeric.toHexString(signedMessage)
 
+        val txHash = server.makeCall(Request("2.0", "eth_sendRawTransaction", listOf<String>(hexValue), 1))
 
+        assertNotNull(txHash)
+
+        assertEquals(BigInteger.ONE, server.makeCall(
+                Request("2.0",
+                        "eth_getTransactionCount",
+                        listOf<String>(accounts[2].address,
+                                "latest"),
+                        1
+                )))
     }
 
 
