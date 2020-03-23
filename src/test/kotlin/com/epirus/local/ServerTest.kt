@@ -133,6 +133,9 @@ class ServerTest {
     }
 
 
+    @Test
+    fun eth_callTest(){
 
+    }
 
 }

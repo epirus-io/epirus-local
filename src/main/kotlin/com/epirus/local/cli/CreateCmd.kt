@@ -39,7 +39,6 @@ class CreateCmd : Callable<kotlin.Int> {
 
     fun createGenesis(accounts: List<Account>): String {
         val genesis = File(directory.removeSuffix("/")+"/genesis.json")
-        if (genesis.exists()) throw Exception("Genesis file exists!")
         genesis.createNewFile()
         var json = "{\n" +
                 "  \"config\": {\n" +

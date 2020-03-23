@@ -52,6 +52,7 @@ class Server(val localLedger: LocalLedger) {
             "eth_getBlockTransactionCountByNumber" -> localLedger.eth_getBlockTransactionCountByNumber(request)
             "eth_getTransactionReceipt" -> localLedger.eth_getTransactionReceipt(request)
             "eth_getCode" -> localLedger.eth_getCode(request)
+            "eth_call" -> localLedger.eth_call(request)
             else -> "Not supported yet!"
         }
     }

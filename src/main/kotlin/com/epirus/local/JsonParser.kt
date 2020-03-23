@@ -46,6 +46,7 @@ class JsonParser {
                                         }
                                     }
                                 }
+                                if(reader.hasNext()) (params[0] as HashMap<String, String>)["tag"] = reader.nextString() // Eth_call case
                             } else
                                 while (reader.hasNext()) (params[1] as MutableList<String>).add(reader.nextString())
                         }
