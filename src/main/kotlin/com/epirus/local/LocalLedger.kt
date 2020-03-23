@@ -2,6 +2,7 @@ package com.epirus.local
 
 
 import com.epirus.local.cli.Account
+import org.hyperledger.besu.ethereum.chain.GenesisState
 import org.hyperledger.besu.ethereum.core.Hash
 import org.web3j.abi.datatypes.Address
 import org.web3j.crypto.Credentials
@@ -17,7 +18,7 @@ import java.math.BigInteger
 import java.net.URL
 import java.util.stream.Collectors
 
-class LocalLedger(val accounts: MutableList<Account>, val genesisPath: String = "src/main/resources/defaultGenesis.json", val init: Boolean = false) {
+class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: String) {
 
     val embeddedEthereum: EmbeddedEthereum
     init {
@@ -25,8 +26,9 @@ class LocalLedger(val accounts: MutableList<Account>, val genesisPath: String = 
                 EmbeddedEthereum(
                         loadConfig(genesisPath),
                         PassthroughTracer())
-        if(init)
-
+        if (!accounts.isNullOrEmpty()) {
+            println("-> Starting client with default genesis file:\n-> chainID = 1")
+            accounts.stream().forEach { t -> println("[*] ${t.address} : 100 eth\n\tPrivate key: ${t.privateKey}")}
         }
     }
 
@@ -116,7 +118,10 @@ class LocalLedger(val accounts: MutableList<Account>, val genesisPath: String = 
 
 
     private fun loadCredentials(address: String?): Credentials {
-        val account = accounts.stream().filter{ it.address == address}.map{it.address}.collect(Collectors.toList())
+        val account = accounts.stream()
+                .filter{ it.address == address}
+                .map{it.address}
+                .collect(Collectors.toList())
 
         return if(account.isEmpty())
             throw Exception("Private key not found! Use eth_sendRawTransaction for personal addresses")
