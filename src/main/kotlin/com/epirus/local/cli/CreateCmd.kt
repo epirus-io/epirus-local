@@ -1,14 +1,10 @@
 package com.epirus.local.cli
 
-import com.beust.klaxon.Klaxon
 import com.epirus.local.LocalLedger
 import com.epirus.local.Server
-import com.fasterxml.jackson.databind.node.ObjectNode
-import org.hyperledger.besu.config.JsonUtil
 import org.web3j.crypto.Credentials
 import picocli.CommandLine
 import java.io.File
-import java.math.BigInteger
 import java.util.concurrent.Callable
 
 @CommandLine.Command(name = "create", description = arrayOf("Creates a new configuration for epirus-local client"))

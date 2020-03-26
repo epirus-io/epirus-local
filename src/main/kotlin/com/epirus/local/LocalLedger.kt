@@ -1,9 +1,6 @@
 package com.epirus.local
 
-
 import com.epirus.local.cli.Account
-import io.ktor.util.hex
-import org.hyperledger.besu.ethereum.chain.GenesisState
 import org.hyperledger.besu.ethereum.core.Hash
 import org.web3j.abi.datatypes.Address
 import org.web3j.crypto.Credentials
@@ -42,26 +39,28 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     fun eth_getTransactionCount(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
-        return embeddedEthereum.getTransactionCount(Address(request.params[0]), request.params[1])
+        return embeddedEthereum.getTransactionCount(Address(request.params[0]),
+                if(request.params[1] == null) "latest" else request.params[1])
     }
 
     fun eth_getBalance(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
-        return embeddedEthereum.ethGetBalance(Address(requestParams[0]), requestParams[1]) ?: "0"
+        return embeddedEthereum.ethGetBalance(Address(requestParams[0]),
+                if(request.params[1] == null) "latest" else request.params[1]) ?: "0"
     }
 
     fun eth_estimateGas(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
         if (requestParams.size < 7) return "Insufficient parameters"
         return embeddedEthereum.estimateGas(Transaction(
-                requestParams["from"],
+                requestParams["from"]?.removePrefix("0x"),
                 BigInteger(requestParams["nonce"]?.removePrefix("0x"), 16),
                 BigInteger(requestParams["gasPrice"]?.removePrefix("0x"), 16),
                 BigInteger(requestParams["gas"]?.removePrefix("0x"), 16),
-                requestParams["to"],
+                requestParams["to"]?.removePrefix("0x"),
                 BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
-                requestParams["data"]))
+                requestParams["data"]?.removePrefix("0x")))
     }
 
     fun eth_getBlockByHash(request: Request): Any {
@@ -95,16 +94,16 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
         return embeddedEthereum.processTransaction(requestParams[0])
     }
 
-    fun eth_sendTransaction(request: Request): Any { // still not working
+    fun eth_sendTransaction(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
-        if (requestParams.size < 6) return "Insufficient parameters"
+        if (requestParams.size < 5) return "Insufficient parameters"
         val rawTransaction = RawTransaction.createTransaction(
                 BigInteger(requestParams["nonce"]?.removePrefix("0x"), 16),
                 BigInteger(requestParams["gasPrice"]?.removePrefix("0x"), 16),
                 BigInteger(requestParams["gas"]?.removePrefix("0x"), 16),
-                requestParams["to"],
+                requestParams["to"]?.removePrefix("0x"),
                 BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
-                requestParams["data"])
+                requestParams["data"]?.removePrefix("0x"))
         val credentials = loadCredentials(requestParams["from"])
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
         val hexValue = Numeric.toHexString(signedMessage)
@@ -120,20 +119,18 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     fun eth_getCode(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
-        return embeddedEthereum.ethGetCode(Address(requestParams[0].removePrefix("0x")), requestParams[1])
+        return embeddedEthereum.ethGetCode(Address(requestParams[0].removePrefix("0x")),
+                if(request.params[1] == null) "latest" else request.params[1])
     }
 
     fun eth_call(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
-        if (requestParams.size < 7) return "Insufficient parameters"
-        return embeddedEthereum.ethCall(Transaction(
-                requestParams["from"],
-                BigInteger("0x0".removePrefix("0x"), 16),
-                BigInteger(requestParams["gasPrice"]?.removePrefix("0x"), 16),
-                BigInteger(requestParams["gas"]?.removePrefix("0x"), 16),
-                requestParams["to"],
-                BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
-                requestParams["data"]), requestParams["tag"]!!)
+        if (requestParams.size < 4) return "Insufficient parameters"
+        return embeddedEthereum.ethCall(Transaction.createEthCallTransaction(
+                    requestParams["from"]?.removePrefix("0x"),
+                    requestParams["to"]?.removePrefix("0x"),
+                    requestParams["data"]?.removePrefix("0x")),
+                if(requestParams["tag"] == null) "latest" else requestParams["tag"]!!)
     }
 
     private fun loadCredentials(address: String?): Credentials {

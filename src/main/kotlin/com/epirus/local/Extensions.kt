@@ -62,7 +62,7 @@ fun TransactionReceipt.toHashMap(): HashMap<String, Any> {
     txReceiptMap["blockHash"] = blockHash
     txReceiptMap["blockNumber"] = blockNumber.toString(16)
     txReceiptMap["from"] = from
-    txReceiptMap["to"] = to
+    txReceiptMap["to"] = to ?: ""
     txReceiptMap["cumulativeGasUsed"] = cumulativeGasUsed.toString(16)
     txReceiptMap["gasUsed"] = gasUsed.toString(16)
     txReceiptMap["contractAddress"] = contractAddress ?: ""
