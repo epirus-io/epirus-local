@@ -11,6 +11,7 @@ import org.web3j.evm.EmbeddedEthereum
 import org.web3j.evm.PassthroughTracer
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthBlock
+import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.net.URL
@@ -38,29 +39,30 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
 
     fun eth_getTransactionCount(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
-        if (requestParams.size < 2) return "Insufficient parameters"
+        if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.getTransactionCount(Address(request.params[0]),
-                if(request.params[1] == null) "latest" else request.params[1])
+                if(request.params.getOrNull(1) == null) "latest" else request.params[1])
     }
 
     fun eth_getBalance(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
-        if (requestParams.size < 2) return "Insufficient parameters"
+        if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.ethGetBalance(Address(requestParams[0]),
-                if(request.params[1] == null) "latest" else request.params[1]) ?: "0"
+                if(request.params.getOrNull(1) == null) "latest" else request.params[1]) ?: "0"
     }
 
     fun eth_estimateGas(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
-        if (requestParams.size < 7) return "Insufficient parameters"
+        if (requestParams.isEmpty()) return "Insufficient parameters"
+        val params = prepareParams(requestParams)
         return embeddedEthereum.estimateGas(Transaction(
-                requestParams["from"]?.removePrefix("0x"),
-                BigInteger(requestParams["nonce"]?.removePrefix("0x"), 16),
-                BigInteger(requestParams["gasPrice"]?.removePrefix("0x"), 16),
-                BigInteger(requestParams["gas"]?.removePrefix("0x"), 16),
-                requestParams["to"]?.removePrefix("0x"),
-                BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
-                requestParams["data"]?.removePrefix("0x")))
+                params["from"] as String,
+                params["nonce"] as BigInteger,
+                params["gasPrice"] as BigInteger,
+                params["gas"] as BigInteger,
+                params["to"] as String,
+                params["value"] as BigInteger,
+                params["data"] as String))
     }
 
     fun eth_getBlockByHash(request: Request): Any {
@@ -96,14 +98,15 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
 
     fun eth_sendTransaction(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
-        if (requestParams.size < 5) return "Insufficient parameters"
+        if (requestParams.size < 3) return "Insufficient parameters"
+        val params = prepareParams(requestParams)
         val rawTransaction = RawTransaction.createTransaction(
-                BigInteger(requestParams["nonce"]?.removePrefix("0x"), 16),
-                BigInteger(requestParams["gasPrice"]?.removePrefix("0x"), 16),
-                BigInteger(requestParams["gas"]?.removePrefix("0x"), 16),
-                requestParams["to"]?.removePrefix("0x"),
-                BigInteger(requestParams["value"]?.removePrefix("0x"), 16),
-                requestParams["data"]?.removePrefix("0x"))
+                params["nonce"] as BigInteger,
+                params["gasPrice"] as BigInteger,
+                params["gas"] as BigInteger,
+                params["to"] as String,
+                params["value"] as BigInteger,
+                params["data"] as String)
         val credentials = loadCredentials(requestParams["from"])
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
         val hexValue = Numeric.toHexString(signedMessage)
@@ -118,14 +121,14 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
 
     fun eth_getCode(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
-        if (requestParams.size < 2) return "Insufficient parameters"
+        if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.ethGetCode(Address(requestParams[0].removePrefix("0x")),
-                if(request.params[1] == null) "latest" else request.params[1])
+                if(request.params.getOrNull(1) == null) "latest" else request.params[1])
     }
 
     fun eth_call(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
-        if (requestParams.size < 4) return "Insufficient parameters"
+        if (requestParams.size < 3) return "Insufficient parameters"
         return embeddedEthereum.ethCall(Transaction.createEthCallTransaction(
                     requestParams["from"]?.removePrefix("0x"),
                     requestParams["to"]?.removePrefix("0x"),
@@ -143,5 +146,52 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
             throw Exception("Private key not found! Use eth_sendRawTransaction for personal addresses")
         else
             Credentials.create(account[0])
+    }
+
+    fun prepareParams(requestParams: HashMap<String, String>): HashMap<String, Any> {
+        val from = requestParams["from"]?.removePrefix("0x")
+        val nonce =
+                BigInteger(
+                        (requestParams["nonce"] ?: "0x" + eth_getTransactionCount(
+                                Request("2.0", "eth_getTransactionCount",
+                                        listOf(requestParams["from"]),1)).toString())
+                                .removePrefix("0x"),
+                        16
+                )
+        val gasPrice =
+                BigInteger(
+                        (requestParams["gasPrice"] ?: "0x3b9aca00").removePrefix("0x"),
+                        16
+                )// gas price or 1GWei
+        val value =
+                BigInteger(
+                        (requestParams["value"] ?: "0x0").removePrefix("0x"),
+                        16
+                )
+        val to = (requestParams["to"] ?: "0x").removePrefix("0x")
+        val data = (requestParams["data"] ?: "0x").removePrefix("0x")
+        val gas =
+                BigInteger(
+                        (requestParams["gas"] ?: embeddedEthereum.estimateGas(
+                                Transaction(
+                                        from,
+                                        nonce,
+                                        gasPrice,
+                                        null,
+                                        to,
+                                        value,
+                                        data
+                                ))).removePrefix("0x"),
+                        16
+                )
+        return hashMapOf<String, Any>(
+                "from" to from!!,
+                "to" to to,
+                "data" to data,
+                "gas" to gas,
+                "gasPrice" to gasPrice,
+                "nonce" to nonce,
+                "value" to value
+        )
     }
 }

@@ -2,6 +2,7 @@ package com.epirus.local
 
 import com.epirus.local.cli.Account
 import com.epirus.local.cli.CreateCmd
+import io.ktor.server.engine.embeddedServer
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference
@@ -65,7 +66,6 @@ class ServerTest {
         tx["gasPrice"] = "0x31413"
         tx["value"] = "0xfff24f"
         tx["nonce"] = "0x0"
-        tx["data"] = ""
         val txHash = server.makeCall(Request("2.0", "eth_sendTransaction", tx, 1))
 
         assertNotNull(txHash)
@@ -125,8 +125,8 @@ class ServerTest {
         tx["gas"] = "0x7cfd"
         tx["gasPrice"] = "0x31413"
         tx["value"] = "0xfff24f"
-        tx["data"] = ""
         tx["nonce"] = "0x0"
+        tx["data"] = ""
         val rawTransaction = RawTransaction.createTransaction(
                 BigInteger(tx["nonce"]?.removePrefix("0x"), 16),
                 BigInteger(tx["gasPrice"]?.removePrefix("0x"), 16),
@@ -178,10 +178,6 @@ class ServerTest {
         tx2["from"] = accounts[5].address
         tx2["to"] = receipt["contractAddress"] as String
         tx2["data"] = txConstruct
-        tx2["gas"] = "0x131840"
-        tx2["gasPrice"] = "0x131840000"
-        tx2["value"] = "0x0"
-        tx2["nonce"] = "0x1"
         server.makeCall(Request("2.0", "eth_sendTransaction", tx2,1)) as String
 
         // Call getNumber using eth_call
