@@ -30,29 +30,30 @@ import kotlin.test.assertNotNull
 class LocalLedgerTest {
 
     private val server: Server
-    val accounts: List<Account>
-    val genesis: String
-    val localLedger: LocalLedger
-    val createCmd: CreateCmd
+    private val accounts: List<Account>
+    private val genesis: String
+    private val localLedger: LocalLedger
+    private val createCmd: CreateCmd = CreateCmd()
+    private val requestHandler: RequestHandler
     init {
-        createCmd = CreateCmd()
         createCmd.directory = "src/test/resources/"
         accounts = createCmd.generateAccounts()
         genesis = createCmd.createGenesis(accounts)
         localLedger = LocalLedger(accounts = accounts, genesisPath = genesis)
         server = Server(localLedger)
+        requestHandler = server.requestHandler
         File(genesis).delete()
     }
 
     @Test
     fun eth_blockNumberTest() {
-        val response = server.makeCall(Request("2.0", "eth_blockNumber", listOf<String>(""), 1))
+        val response = requestHandler.makeCall(Request("2.0", "eth_blockNumber", listOf<String>(""), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000000000000000000000", response)
     }
 
     @Test
     fun eth_getBalanceTest() {
-        val response = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[0].address, "latest"), 1))
+        val response = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[0].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d63100000", response)
     }
 
@@ -65,11 +66,11 @@ class LocalLedgerTest {
         tx["gasPrice"] = "0x31413"
         tx["value"] = "0xfff24f"
         tx["nonce"] = "0x0"
-        val txHash = server.makeCall(Request("2.0", "eth_sendTransaction", tx, 1))
+        val txHash = requestHandler.makeCall(Request("2.0", "eth_sendTransaction", tx, 1))
 
         assertNotNull(txHash)
 
-        assertEquals(BigInteger.ONE, server.makeCall(
+        assertEquals(BigInteger.ONE, requestHandler.makeCall(
                 Request("2.0",
                         "eth_getTransactionCount",
                         listOf<String>(accounts[0].address,
@@ -77,26 +78,26 @@ class LocalLedgerTest {
                         1
                 )))
 
-        val txReceipt = server.makeCall(
+        val txReceipt = requestHandler.makeCall(
                 Request("2.0",
                         "eth_getTransactionReceipt",
                         listOf<String>(txHash as String),
                         1))
         assertNotNull(txReceipt)
 
-        assertEquals("0x1", server.makeCall(Request("2.0",
+        assertEquals("0x1", requestHandler.makeCall(Request("2.0",
                 "eth_getBlockTransactionCountByHash",
                 listOf<String>(
                         (txReceipt as HashMap<String, String>)["blockHash"]!!
                 ),
                 1)))
 
-        assertEquals("0x1", server.makeCall(Request("2.0",
+        assertEquals("0x1", requestHandler.makeCall(Request("2.0",
                 "eth_getBlockTransactionCountByNumber",
                 listOf<String>("0x1"),
                 1)))
 
-        val balance = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[1].address, "latest"), 1))
+        val balance = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[1].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d640ff24f", balance)
     }
 
@@ -111,7 +112,7 @@ class LocalLedgerTest {
         transactionDetails["nonce"] = "0x0"
         transactionDetails["data"] = "0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675"
 
-        val response = server.makeCall(Request("2.0", "eth_estimateGas", transactionDetails, 1))
+        val response = requestHandler.makeCall(Request("2.0", "eth_estimateGas", transactionDetails, 1))
         assertEquals("0x00000000000000000000000000000000000000000000000000000000000341ce", response)
     }
 
@@ -136,11 +137,11 @@ class LocalLedgerTest {
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
         val hexValue = Numeric.toHexString(signedMessage)
 
-        val txHash = server.makeCall(Request("2.0", "eth_sendRawTransaction", listOf<String>(hexValue), 1))
+        val txHash = requestHandler.makeCall(Request("2.0", "eth_sendRawTransaction", listOf<String>(hexValue), 1))
 
         assertNotNull(txHash)
 
-        assertEquals(BigInteger.ONE, server.makeCall(
+        assertEquals(BigInteger.ONE, requestHandler.makeCall(
                 Request("2.0",
                         "eth_getTransactionCount",
                         listOf<String>(accounts[2].address,
@@ -148,7 +149,7 @@ class LocalLedgerTest {
                         1
                 )))
 
-        val balance = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[3].address, "latest"), 1))
+        val balance = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[3].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d640ff24f", balance)
     }
 
@@ -163,10 +164,10 @@ class LocalLedgerTest {
         tx["gasPrice"] = "0x131840000"
         tx["value"] = "0x0"
         tx["nonce"] = "0x0"
-        val hash: String = server.makeCall(Request("2.0", "eth_sendTransaction", tx, 1)) as String
+        val hash: String = requestHandler.makeCall(Request("2.0", "eth_sendTransaction", tx, 1)) as String
 
         // Getting transaction receipt
-        val receipt: HashMap<String, Any> = server.makeCall(Request("2.0", "eth_getTransactionReceipt", listOf(hash), 1)) as HashMap<String, Any>
+        val receipt: HashMap<String, Any> = requestHandler.makeCall(Request("2.0", "eth_getTransactionReceipt", listOf(hash), 1)) as HashMap<String, Any>
 
         // Calling newNumber function using normal transaction
         val functionConstruct = Function("newNumber", listOf(org.web3j.abi.datatypes.generated.Int256(1)), listOf())
@@ -175,7 +176,7 @@ class LocalLedgerTest {
         tx2["from"] = accounts[5].address
         tx2["to"] = receipt["contractAddress"] as String
         tx2["data"] = txConstruct
-        server.makeCall(Request("2.0", "eth_sendTransaction", tx2, 1)) as String
+        requestHandler.makeCall(Request("2.0", "eth_sendTransaction", tx2, 1)) as String
 
         // Call getNumber using eth_call
         val function = Function("getNumber", mutableListOf(), listOf(object : TypeReference<org.web3j.abi.datatypes.generated.Int256?>() {}))
@@ -185,11 +186,11 @@ class LocalLedgerTest {
         call["to"] = receipt["contractAddress"] as String
         call["data"] = txData
         call["tag"] = "latest"
-        val result = server.makeCall(Request("2.0", "eth_call", call, 1))
+        val result = requestHandler.makeCall(Request("2.0", "eth_call", call, 1))
         assertEquals("0x0000000000000000000000000000000000000000000000000000000000000001", result)
 
         // Getting code
-        val code = server.makeCall(Request("2.0", "eth_getCode", listOf(receipt["contractAddress"] as String, "latest"), 1))
+        val code = requestHandler.makeCall(Request("2.0", "eth_getCode", listOf(receipt["contractAddress"] as String, "latest"), 1))
         assertEquals("0x60806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416632ca832648114604d578063f2c9ecd8146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582072c890936b2bc717b79b9bbca671d8a983b98822147b264ff0c74766597a9d8f0029", code)
     }
 }
