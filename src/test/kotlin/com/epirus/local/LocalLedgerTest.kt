@@ -1,41 +1,40 @@
+/*
+ * Copyright 2020 Web3 Labs Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.epirus.local
 
 import com.epirus.local.cli.Account
 import com.epirus.local.cli.CreateCmd
-import io.ktor.server.engine.embeddedServer
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference
-import org.web3j.abi.datatypes.Address
-import org.web3j.abi.datatypes.Type
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.evm.Configuration
-import org.web3j.evm.EmbeddedWeb3jService
-import org.web3j.evm.PassthroughTracer
-import org.web3j.protocol.Web3j
-import org.web3j.protocol.Web3jService
-import org.web3j.protocol.core.DefaultBlockParameter
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import java.io.File
 import java.math.BigInteger
-import java.net.URL
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+class LocalLedgerTest {
 
-class ServerTest {
-
-    private val server : Server
+    private val server: Server
     val accounts: List<Account>
-    val genesis : String
-    val localLedger : LocalLedger
-    val createCmd : CreateCmd
-    init{
+    val genesis: String
+    val localLedger: LocalLedger
+    val createCmd: CreateCmd
+    init {
         createCmd = CreateCmd()
         createCmd.directory = "src/test/resources/"
         accounts = createCmd.generateAccounts()
@@ -46,19 +45,19 @@ class ServerTest {
     }
 
     @Test
-    fun eth_blockNumberTest(){
+    fun eth_blockNumberTest() {
         val response = server.makeCall(Request("2.0", "eth_blockNumber", listOf<String>(""), 1))
-        assertEquals( "0x0000000000000000000000000000000000000000000000000000000000000000", response)
+        assertEquals("0x0000000000000000000000000000000000000000000000000000000000000000", response)
     }
 
     @Test
-    fun eth_getBalanceTest(){
+    fun eth_getBalanceTest() {
         val response = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[0].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d63100000", response)
     }
 
     @Test
-    fun sendingTransactionTest(){
+    fun sendingTransactionTest() {
         val tx = HashMap<String, Any>()
         tx["from"] = accounts[0].address
         tx["to"] = accounts[1].address
@@ -99,11 +98,10 @@ class ServerTest {
 
         val balance = server.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[1].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d640ff24f", balance)
-
     }
 
     @Test
-    fun eth_estimateGasTest(){
+    fun eth_estimateGasTest() {
         val transactionDetails = HashMap<String, String>()
         transactionDetails["from"] = "0xb60e8dd61c5d32be8058bb8eb970870f07233155"
         transactionDetails["to"] = "0xb60e8dd61c5d32be8058bb8eb970870f07233156"
@@ -154,9 +152,8 @@ class ServerTest {
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d640ff24f", balance)
     }
 
-
     @Test
-    fun deployingContractTest(){
+    fun deployingContractTest() {
 
         // Deploying the contract
         val tx = HashMap<String, String>()
@@ -166,10 +163,10 @@ class ServerTest {
         tx["gasPrice"] = "0x131840000"
         tx["value"] = "0x0"
         tx["nonce"] = "0x0"
-        val hash : String = server.makeCall(Request("2.0", "eth_sendTransaction", tx,1)) as String
+        val hash: String = server.makeCall(Request("2.0", "eth_sendTransaction", tx, 1)) as String
 
         // Getting transaction receipt
-        val receipt : HashMap<String, Any> = server.makeCall(Request("2.0", "eth_getTransactionReceipt", listOf(hash), 1)) as HashMap<String, Any>
+        val receipt: HashMap<String, Any> = server.makeCall(Request("2.0", "eth_getTransactionReceipt", listOf(hash), 1)) as HashMap<String, Any>
 
         // Calling newNumber function using normal transaction
         val functionConstruct = Function("newNumber", listOf(org.web3j.abi.datatypes.generated.Int256(1)), listOf())
@@ -178,22 +175,21 @@ class ServerTest {
         tx2["from"] = accounts[5].address
         tx2["to"] = receipt["contractAddress"] as String
         tx2["data"] = txConstruct
-        server.makeCall(Request("2.0", "eth_sendTransaction", tx2,1)) as String
+        server.makeCall(Request("2.0", "eth_sendTransaction", tx2, 1)) as String
 
         // Call getNumber using eth_call
-        val function = Function("getNumber", mutableListOf(), listOf(object : TypeReference<org.web3j.abi.datatypes.generated.Int256?>(){}))
+        val function = Function("getNumber", mutableListOf(), listOf(object : TypeReference<org.web3j.abi.datatypes.generated.Int256?>() {}))
         val txData = FunctionEncoder.encode(function)
         val call = HashMap<String, String>()
         call["from"] = accounts[5].address
         call["to"] = receipt["contractAddress"] as String
         call["data"] = txData
         call["tag"] = "latest"
-        val result = server.makeCall(Request("2.0", "eth_call", call,1))
+        val result = server.makeCall(Request("2.0", "eth_call", call, 1))
         assertEquals("0x0000000000000000000000000000000000000000000000000000000000000001", result)
 
         // Getting code
         val code = server.makeCall(Request("2.0", "eth_getCode", listOf(receipt["contractAddress"] as String, "latest"), 1))
-        assertEquals("0x60806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416632ca832648114604d578063f2c9ecd8146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582072c890936b2bc717b79b9bbca671d8a983b98822147b264ff0c74766597a9d8f0029"
-                , code)
+        assertEquals("0x60806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416632ca832648114604d578063f2c9ecd8146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582072c890936b2bc717b79b9bbca671d8a983b98822147b264ff0c74766597a9d8f0029", code)
     }
 }
