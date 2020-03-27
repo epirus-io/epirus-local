@@ -29,11 +29,12 @@ import java.io.StringReader
  */
 class JsonParser {
 
+    @Suppress("UNCHECKED_CAST")
     fun parse(request: String): Request {
-        var jsonrpc: String = ""
+        var jsonrpc = ""
         var id: Long = 0
-        var method: String = ""
-        var params = arrayListOf<Any>(HashMap<String, String>(), mutableListOf<String>())
+        var method = ""
+        val params = arrayListOf(HashMap<String, String>(), mutableListOf<String>())
 
         JsonReader(StringReader(request)).use { reader ->
             reader.beginObject {

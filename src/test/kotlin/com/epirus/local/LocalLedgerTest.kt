@@ -13,7 +13,6 @@
 package com.epirus.local
 
 import com.epirus.local.cli.Account
-import com.epirus.local.cli.CreateCmd
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference
@@ -23,41 +22,37 @@ import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
 import java.io.File
 import java.math.BigInteger
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class LocalLedgerTest {
 
-    private val server: Server
-    private val accounts: List<Account>
+    private val accounts: List<Account> = generateAccounts()
     private val genesis: String
     private val localLedger: LocalLedger
-    private val createCmd: CreateCmd = CreateCmd()
     private val requestHandler: RequestHandler
     init {
-        createCmd.directory = "src/test/resources/"
-        accounts = createCmd.generateAccounts()
-        genesis = createCmd.createGenesis(accounts)
+        genesis = createGenesis("src/test/resources/", accounts)
         localLedger = LocalLedger(accounts = accounts, genesisPath = genesis)
-        server = Server(localLedger)
-        requestHandler = server.requestHandler
+        requestHandler = RequestHandler(localLedger)
         File(genesis).delete()
     }
 
     @Test
     fun eth_blockNumberTest() {
-        val response = requestHandler.makeCall(Request("2.0", "eth_blockNumber", listOf<String>(""), 1))
+        val response = requestHandler.makeCall(Request("2.0", "eth_blockNumber", listOf(""), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000000000000000000000", response)
     }
 
     @Test
     fun eth_getBalanceTest() {
-        val response = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[0].address, "latest"), 1))
+        val response = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf(accounts[0].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d63100000", response)
     }
 
     @Test
+    @Suppress("UNCHECKED_CAST")
     fun sendingTransactionTest() {
         val tx = HashMap<String, Any>()
         tx["from"] = accounts[0].address
@@ -73,7 +68,7 @@ class LocalLedgerTest {
         assertEquals(BigInteger.ONE, requestHandler.makeCall(
                 Request("2.0",
                         "eth_getTransactionCount",
-                        listOf<String>(accounts[0].address,
+                        listOf(accounts[0].address,
                                 "latest"),
                         1
                 )))
@@ -81,23 +76,23 @@ class LocalLedgerTest {
         val txReceipt = requestHandler.makeCall(
                 Request("2.0",
                         "eth_getTransactionReceipt",
-                        listOf<String>(txHash as String),
+                        listOf(txHash as String),
                         1))
         assertNotNull(txReceipt)
 
         assertEquals("0x1", requestHandler.makeCall(Request("2.0",
                 "eth_getBlockTransactionCountByHash",
-                listOf<String>(
+                listOf(
                         (txReceipt as HashMap<String, String>)["blockHash"]!!
                 ),
                 1)))
 
         assertEquals("0x1", requestHandler.makeCall(Request("2.0",
                 "eth_getBlockTransactionCountByNumber",
-                listOf<String>("0x1"),
+                listOf("0x1"),
                 1)))
 
-        val balance = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[1].address, "latest"), 1))
+        val balance = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf(accounts[1].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d640ff24f", balance)
     }
 
@@ -144,16 +139,17 @@ class LocalLedgerTest {
         assertEquals(BigInteger.ONE, requestHandler.makeCall(
                 Request("2.0",
                         "eth_getTransactionCount",
-                        listOf<String>(accounts[2].address,
+                        listOf(accounts[2].address,
                                 "latest"),
                         1
                 )))
 
-        val balance = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf<String>(accounts[3].address, "latest"), 1))
+        val balance = requestHandler.makeCall(Request("2.0", "eth_getBalance", listOf(accounts[3].address, "latest"), 1))
         assertEquals("0x0000000000000000000000000000000000000000000000056bc75e2d640ff24f", balance)
     }
 
     @Test
+    @Suppress("UNCHECKED_CAST")
     fun deployingContractTest() {
 
         // Deploying the contract

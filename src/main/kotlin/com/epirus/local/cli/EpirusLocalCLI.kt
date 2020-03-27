@@ -13,20 +13,21 @@
 package com.epirus.local.cli
 
 import picocli.CommandLine
+import picocli.CommandLine.Command
 import java.util.concurrent.Callable
 
-@CommandLine.Command(name = "epirus-local",
-        version = arrayOf("epirus-local 1.0"),
-        description = arrayOf("\n" +
+@Command(name = "epirus-local",
+        version = ["epirus-local 1.0"],
+        description = ["\n" +
                 "\n" +
                 "____ ___  _ ____ _  _ ____    _    ____ ____ ____ _    \n" +
                 "|___ |__] | |__/ |  | [__     |    |  | |    |__| |    \n" +
                 "|___ |    | |  \\ |__| ___]    |___ |__| |___ |  | |___ \n" +
-                "                                                       \n"),
-        subcommands = [CreateCmd::class, LoadCmd::class, picocli.CommandLine.HelpCommand::class]
+                "                                                       \n"],
+        subcommands = [CreateCmd::class, LoadCmd::class, CommandLine.HelpCommand::class]
 )
-class EpirusLocalCLI : Callable<kotlin.Int> {
-    override fun call(): kotlin.Int {
+class EpirusLocalCLI : Callable<Int> {
+    override fun call(): Int {
         return 0
     }
 }

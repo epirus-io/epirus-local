@@ -30,16 +30,12 @@ import java.util.stream.Collectors
 
 class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: String) {
 
-    val embeddedEthereum: EmbeddedEthereum
+    private val embeddedEthereum: EmbeddedEthereum
     init {
         embeddedEthereum =
                 EmbeddedEthereum(
                         loadConfig(genesisPath),
                         PassthroughTracer())
-        if (!accounts.isNullOrEmpty()) {
-            println("-> Starting client with default genesis file:\n-> chainID = 1")
-            accounts.stream().forEach { t -> println("[*] ${t.address} : 100 eth\n\tPrivate key: ${t.privateKey}") }
-        }
     }
 
     private fun loadConfig(path: String): Configuration {
@@ -48,6 +44,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
 
     fun eth_blockNumber(): String = embeddedEthereum.ethBlockNumber()
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getTransactionCount(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
@@ -55,6 +52,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
                 if (request.params.getOrNull(1) == null) "latest" else request.params[1])
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getBalance(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
@@ -62,6 +60,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
                 if (request.params.getOrNull(1) == null) "latest" else request.params[1]) ?: "0"
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_estimateGas(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
@@ -76,12 +75,14 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
                 params["data"] as String))
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getBlockByHash(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
         return embeddedEthereum.ethBlockByHash(requestParams[0], requestParams[1].toBoolean()) ?: "null"
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getBlockByNumber(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
@@ -89,24 +90,28 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
         return block?.toHashMap(requestParams[1].toBoolean()) ?: "null"
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getBlockTransactionCountByHash(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.ethGetBlockTransactionCountByHash(Hash.fromHexString(requestParams[0]))
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getBlockTransactionCountByNumber(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.ethGetBlockTransactionCountByNumber(requestParams[0].removePrefix("0x").toLong(16))
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_sendRawTransaction(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.processTransaction(requestParams[0])
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_sendTransaction(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
         if (requestParams.size < 3) return "Insufficient parameters"
@@ -124,12 +129,14 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
         return embeddedEthereum.processTransaction(hexValue)
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getTransactionReceipt(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.getTransactionReceipt(requestParams[0].removePrefix("0x"))?.toHashMap() ?: "null"
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_getCode(request: Request): Any {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
@@ -137,6 +144,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
                 if (request.params.getOrNull(1) == null) "latest" else request.params[1])
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun eth_call(request: Request): Any {
         val requestParams: HashMap<String, String> = request.params as HashMap<String, String>
         if (requestParams.size < 3) return "Insufficient parameters"
@@ -195,7 +203,7 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
                                 ))).removePrefix("0x"),
                         16
                 )
-        return hashMapOf<String, Any>(
+        return hashMapOf(
                 "from" to from!!,
                 "to" to to,
                 "data" to data,

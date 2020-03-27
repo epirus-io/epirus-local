@@ -14,7 +14,7 @@ package com.epirus.local
 
 import com.beust.klaxon.Klaxon
 
-class RequestHandler(val localLedger: LocalLedger) {
+class RequestHandler(private val localLedger: LocalLedger) {
 
     fun processRequest(jsonRequest: String): String {
         val request = JsonParser().parse(jsonRequest)
