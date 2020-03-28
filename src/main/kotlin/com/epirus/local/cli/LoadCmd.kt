@@ -12,7 +12,7 @@
  */
 package com.epirus.local.cli
 
-import picocli.CommandLine
+import picocli.CommandLine.Command
 
-@CommandLine.Command(name = "load", description = arrayOf("Load a previous configuration for epirus-local client (Not yet supported!)"))
+@Command(name = "load", description = ["Load a previous configuration for epirus-local client (Not yet supported!)"])
 class LoadCmd
