@@ -12,7 +12,35 @@
  */
 package com.epirus.local.cli
 
+import io.ktor.server.engine.commandLineEnvironment
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import picocli.CommandLine
 import picocli.CommandLine.Command
+import java.util.concurrent.Callable
 
-@Command(name = "load", description = ["Load a previous configuration for epirus-local client (Not yet supported!)"])
-class LoadCmd
+@Command(name = "load", description = ["Load a previous configuration for epirus-local client"])
+class LoadCmd : Callable<Int> {
+
+    @CommandLine.Option(names = ["-g", "--genesis"],
+            description = ["specify the genesis file"],
+            defaultValue = ".")
+    var directory: String = "."
+
+    // Not yet working
+    @CommandLine.Option(names = ["-p", "--port"],
+            description = ["specify the port to run the client on"],
+            hidden = true)
+    var port: Int = 8080
+
+    // Not yet working
+    @CommandLine.Option(names = ["-h", "--host"],
+            description = ["specify the host to run the client on"],
+            hidden = true)
+    var host: String = "0.0.0.0"
+
+    override fun call(): Int {
+        embeddedServer(Netty, commandLineEnvironment(arrayOf())).start()
+        return 0
+    }
+}

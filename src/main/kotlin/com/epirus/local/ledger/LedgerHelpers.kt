@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package com.epirus.local.ledger
 
 import com.epirus.local.cli.Account
 import org.web3j.crypto.Credentials
@@ -53,4 +53,52 @@ fun generateAccounts(): List<Account> {
         accounts.add(Account(creds.address, privateKey))
     }
     return accounts.toMutableList()
+}
+
+fun createLedger(command: String?): LocalLedger {
+
+    val arguments = parseArguments(command)
+
+    val directory = arguments["directory"] ?: "."
+    val port = arguments["port"] ?: "8080"
+    val host = arguments["host"] ?: "127.0.0.1"
+    val genesisPath = arguments["genesis"]
+
+    var log: String
+    val localLedger = if (genesisPath.isNullOrBlank()) {
+        val accounts = generateAccounts()
+        val genesis = createGenesis(directory, accounts)
+        log = """-> Starting ledger with generated genesis file: $genesis
+            -> chainID = 1
+            -> Port = $port
+            -> Host = $host"""
+        accounts.stream().forEach { t -> log += "\n[*] ${t.address} : 100 eth\n\tPrivate key: ${t.privateKey}" }
+        LocalLedger(accounts, genesis)
+    } else {
+        log = """-> Starting ledger with genesis file: $genesisPath
+            -> Port = $port
+            -> Host = $host""".trimIndent()
+        LocalLedger(genesisPath = genesisPath)
+    }
+
+    println(log)
+
+    return localLedger
+}
+
+fun parseArguments(command: String?): HashMap<String, String?> {
+
+    val splitCommand = command?.split(" ")
+    val arguments = HashMap<String, String?>()
+
+    splitCommand?.stream()?.forEach { s ->
+        run {
+            if (s.startsWith("-p") || s.startsWith("--port")) arguments["port"] = s.split("=").getOrNull(1)
+            else if (s.startsWith("-d") || s.startsWith("--directory")) arguments["directory"] = s.split("=").getOrNull(1)
+            else if (s.startsWith("-h") || s.startsWith("--host")) arguments["host"] = s.split("=").getOrNull(1)
+            else if (s.startsWith("-g") || s.startsWith("--genesis")) arguments["genesis"] = s.split("=").getOrNull(1)
+        }
+    }
+
+    return arguments
 }

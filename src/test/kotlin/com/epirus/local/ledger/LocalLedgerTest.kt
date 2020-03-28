@@ -15,8 +15,6 @@ package com.epirus.local.ledger
 import com.epirus.local.cli.Account
 import com.epirus.local.server.Request
 import com.epirus.local.server.RequestHandler
-import com.epirus.local.server.createGenesis
-import com.epirus.local.server.generateAccounts
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference

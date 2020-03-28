@@ -20,7 +20,7 @@ import picocli.CommandLine.Option
 import java.util.concurrent.Callable
 
 @Command(name = "create", description = ["Creates a new configuration for epirus-local client",
-    "Example: epirus-local create -p=9090 -d=/tmp"])
+    "Example: epirus-local create -d=/tmp"])
 class CreateCmd : Callable<Int> {
 
     @Option(names = ["-d", "--directory"],
@@ -28,16 +28,20 @@ class CreateCmd : Callable<Int> {
             defaultValue = ".")
     var directory: String = "."
 
+    // Not yet working
     @Option(names = ["-p", "--port"],
-            description = ["specify the port to run the client on"])
+            description = ["specify the port to run the client on"],
+            hidden = true)
     var port: Int = 8080
 
+    // Not yet working
     @Option(names = ["-h", "--host"],
-            description = ["specify the host to run the client on"])
-    var host: String = "0.0.0.0"
+            description = ["specify the host to run the client on"],
+        hidden = true)
+    var host: String = "127.0.0.1"
 
     override fun call(): Int {
-        embeddedServer(Netty, commandLineEnvironment(arrayOf("-p=$port", "-h=$host"))).start()
+        embeddedServer(Netty, commandLineEnvironment(arrayOf())).start()
         return 0
     }
 }
