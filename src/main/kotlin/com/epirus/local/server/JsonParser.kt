@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local
+package com.epirus.local.server
 
 import com.beust.klaxon.JsonReader
 import com.beust.klaxon.token.LEFT_BRACE
@@ -29,11 +29,12 @@ import java.io.StringReader
  */
 class JsonParser {
 
+    @Suppress("UNCHECKED_CAST")
     fun parse(request: String): Request {
-        var jsonrpc: String = ""
+        var jsonrpc = ""
         var id: Long = 0
-        var method: String = ""
-        var params = arrayListOf<Any>(HashMap<String, String>(), mutableListOf<String>())
+        var method = ""
+        val params = arrayListOf(HashMap<String, String>(), mutableListOf<String>())
 
         JsonReader(StringReader(request)).use { reader ->
             reader.beginObject {

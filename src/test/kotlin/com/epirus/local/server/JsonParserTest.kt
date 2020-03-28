@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local
+package com.epirus.local.server
 
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -19,14 +19,14 @@ class JsonParserTest {
 
     @Test
     fun parseTest() {
-        val jsonReq = "{\"jsonrpc\":\"2.0\",\"method\":\"eth_call\",\"params\":[{\n" +
-                "  \"from\": \"0xec4c32516b5b8ab1fbc4e321e9974d94acc39c46\",\n" +
-                "  \"to\": \"0xd46e8dd67c5d32be8058bb8eb970870f07244567\",\n" +
-                "  \"gas\": \"0x76c0\",\n" +
-                "  \"gasPrice\": \"0x9184e72a000\",\n" +
-                "  \"value\": \"0x9184e72a\", \"nonce\":\"0x0\",\n" +
-                "  \"data\": \"\"\n" +
-                "}, \"latest\"],\"id\":1}"
+        val jsonReq = """{"jsonrpc":"2.0","method":"eth_call","params":[{"
+                "from": "0xec4c32516b5b8ab1fbc4e321e9974d94acc39c46","
+                "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567","
+                "gas": "0x76c0","
+                "gasPrice": "0x9184e72a000",
+                "value": "0x9184e72a", "nonce":"0x0",
+                "data": ""
+                "}, "latest"],"id":1}""".trimIndent()
         val actualReq = JsonParser().parse(jsonReq)
 
         val expectedParams = HashMap<String, String>()

@@ -10,11 +10,12 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local
+package com.epirus.local.server
 
 import com.beust.klaxon.Klaxon
+import com.epirus.local.ledger.LocalLedger
 
-class RequestHandler(val localLedger: LocalLedger) {
+class RequestHandler(private val localLedger: LocalLedger) {
 
     fun processRequest(jsonRequest: String): String {
         val request = JsonParser().parse(jsonRequest)
