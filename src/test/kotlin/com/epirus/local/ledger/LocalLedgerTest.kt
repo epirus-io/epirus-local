@@ -15,6 +15,7 @@ package com.epirus.local.ledger
 import com.epirus.local.cli.Account
 import com.epirus.local.server.Request
 import com.epirus.local.server.RequestHandler
+import com.epirus.local.utils.Folders
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference
@@ -35,7 +36,8 @@ class LocalLedgerTest {
     private val localLedger: LocalLedger
     private val requestHandler: RequestHandler
     init {
-        genesis = createGenesis("src/test/resources/", accounts)
+        val tempDirPath = Folders.tempBuildFolder().absolutePath
+        genesis = createGenesis(tempDirPath, accounts)
         localLedger = LocalLedger(accounts = accounts, genesisPath = genesis)
         requestHandler = RequestHandler(localLedger)
         File(genesis).delete()

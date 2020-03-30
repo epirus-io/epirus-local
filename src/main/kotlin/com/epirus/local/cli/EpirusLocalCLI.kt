@@ -24,7 +24,7 @@ import java.util.concurrent.Callable
                 "|___ |__] | |__/ |  | [__     |    |  | |    |__| |    \n" +
                 "|___ |    | |  \\ |__| ___]    |___ |__| |___ |  | |___ \n" +
                 "                                                       \n"],
-        subcommands = [CreateCmd::class, LoadCmd::class, CommandLine.HelpCommand::class]
+        subcommands = [StartCmd::class, LoadCmd::class, CommandLine.HelpCommand::class]
 )
 class EpirusLocalCLI : Callable<Int> {
     override fun call(): Int {

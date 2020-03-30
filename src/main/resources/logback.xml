@@ -11,10 +11,10 @@
     </contextListener>
 
     <logger name="org.web3j" level="info"/>
-    <logger name="ch.qos.logback" level="error"/>
-    <logger name="org.junit.jupiter" level="warn"/>
+    <logger name="ch.qos.logback" level="info"/>
+    <logger name="org.junit.jupiter" level="info"/>
 
-    <root level="error">
+    <root level="info">
         <appender-ref ref="CONSOLE"/>
     </root>
 

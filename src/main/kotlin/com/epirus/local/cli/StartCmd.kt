@@ -19,22 +19,22 @@ import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.util.concurrent.Callable
 
-@Command(name = "create", description = ["Creates a new configuration for epirus-local client",
+@Command(name = "start", description = ["Creates a new configuration for epirus-local client",
     "Example: epirus-local create -d=/tmp"])
-class CreateCmd : Callable<Int> {
+class StartCmd : Callable<Int> {
 
     @Option(names = ["-d", "--directory"],
             description = ["specify the directory of the output configuration"],
             defaultValue = ".")
     var directory: String = "."
 
-    // Not yet working
+    // FIXME: when specified => network permissions required
     @Option(names = ["-p", "--port"],
             description = ["specify the port to run the client on"],
             hidden = true)
     var port: Int = 8080
 
-    // Not yet working
+    // FIXME: when specified => network permissions required
     @Option(names = ["-h", "--host"],
             description = ["specify the host to run the client on"],
         hidden = true)

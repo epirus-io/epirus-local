@@ -12,6 +12,7 @@
  */
 package com.epirus.local.ledger
 
+import com.epirus.local.utils.Folders
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -26,7 +27,8 @@ class LedgerHelpersTest {
     @Test
     fun createGenesisTest() {
         val accounts = generateAccounts()
-        val genesis = createGenesis("src/test/resources", accounts)
+        val tempDirPath = Folders.tempBuildFolder().absolutePath
+        val genesis = createGenesis(tempDirPath, accounts)
         val genesisFile = File(genesis)
         assert(genesisFile.exists())
         genesisFile.delete()
@@ -36,12 +38,13 @@ class LedgerHelpersTest {
     fun parseArgumentsTest() {
         val command = "epirus-local create -g=/test"
         val arguments = parseArguments(command)
-        assert(!arguments["genesis"].isNullOrEmpty())
+        assert(!arguments.genesis.isNullOrEmpty())
     }
 
     @Test
     fun createLedgerTest() {
-        val command = "epirus-local create -d=src/test/resources"
+        val tempDirPath = Folders.tempBuildFolder().absolutePath
+        val command = "epirus-local create -d=$tempDirPath"
         val localLedger = createLedger(command)
         assert(localLedger.genesisPath.isNotEmpty())
         val genesis = File("src/test/resources/genesis.json")

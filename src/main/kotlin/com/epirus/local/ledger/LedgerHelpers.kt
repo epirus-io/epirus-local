@@ -13,14 +13,16 @@
 package com.epirus.local.ledger
 
 import com.epirus.local.cli.Account
+import org.slf4j.LoggerFactory
 import org.web3j.crypto.Credentials
+import org.web3j.crypto.Keys
 import java.io.File
 
 fun createGenesis(directory: String, accounts: List<Account>): String {
     val genesis = File(directory.removeSuffix("/") + "/genesis.json")
     genesis.createNewFile()
     var json = """{
-                  "comment": "Automatically generated genesis. DO NOT TOUCH!",
+                  "comment": "Automatically generated genesis. DO NOT MODIFY!",
                   "config": {
                     "chainId": 999,
                     "constantinopleFixBlock": 0,
@@ -33,7 +35,7 @@ fun createGenesis(directory: String, accounts: List<Account>): String {
                   "alloc": {""".trimIndent()
 
     accounts.stream()
-            .forEach { t -> json += "\"" + t.address + """":{"balance" : "0x56BC75E2D63100000"},""" } // to be changed
+            .forEach { t -> json += "\"" + t.address + """":{"balance" : "0x56BC75E2D63100000"},""" }
 
     json = json.removeSuffix(",") + "}}"
     genesis.writeText(json)
@@ -42,27 +44,24 @@ fun createGenesis(directory: String, accounts: List<Account>): String {
 
 fun generateAccounts(): List<Account> {
     val accounts = mutableListOf<Account>()
-    val charpool: List<Char> = ('a'..'f') + ('0'..'9')
 
     (1..10).forEach { _ ->
-        val privateKey: String = (1..64)
-                .map { kotlin.random.Random.nextInt(0, charpool.size) }
-                .map(charpool::get)
-                .joinToString("")
-        val creds = Credentials.create(privateKey)
-        accounts.add(Account(creds.address, privateKey))
+        val ecKeyPair = Keys.createEcKeyPair()
+
+        val creds = Credentials.create(ecKeyPair.privateKey.toString(16))
+        accounts.add(Account(creds.address, ecKeyPair.privateKey.toString(16)))
     }
     return accounts.toMutableList()
 }
 
 fun createLedger(command: String?): LocalLedger {
 
-    val arguments = parseArguments(command)
+    val config = parseArguments(command)
 
-    val directory = arguments["directory"] ?: "."
-    val port = arguments["port"] ?: "8080"
-    val host = arguments["host"] ?: "127.0.0.1"
-    val genesisPath = arguments["genesis"]
+    val directory = config.directory ?: "."
+    val port = config.port ?: "8080"
+    val host = config.host ?: "127.0.0.1"
+    val genesisPath = config.genesis
 
     var log: String
     val localLedger = if (genesisPath.isNullOrBlank()) {
@@ -81,12 +80,13 @@ fun createLedger(command: String?): LocalLedger {
         LocalLedger(genesisPath = genesisPath)
     }
 
-    println(log)
+    val logger = LoggerFactory.getLogger(Any::class.java)
+    logger.info(log)
 
     return localLedger
 }
 
-fun parseArguments(command: String?): HashMap<String, String?> {
+fun parseArguments(command: String?): Configuration {
 
     val splitCommand = command?.split(" ")
     val arguments = HashMap<String, String?>()
@@ -100,5 +100,9 @@ fun parseArguments(command: String?): HashMap<String, String?> {
         }
     }
 
-    return arguments
+    return Configuration(
+            arguments["genesis"],
+            arguments["port"]?.toInt(),
+            arguments["host"],
+            arguments["directory"])
 }

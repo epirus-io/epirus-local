@@ -27,13 +27,13 @@ class LoadCmd : Callable<Int> {
             defaultValue = ".")
     var directory: String = "."
 
-    // Not yet working
+    // FIXME: when specified => network permissions required
     @CommandLine.Option(names = ["-p", "--port"],
             description = ["specify the port to run the client on"],
             hidden = true)
     var port: Int = 8080
 
-    // Not yet working
+    // FIXME: when specified => network permissions required
     @CommandLine.Option(names = ["-h", "--host"],
             description = ["specify the host to run the client on"],
             hidden = true)
