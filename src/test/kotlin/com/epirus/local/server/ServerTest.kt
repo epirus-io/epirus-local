@@ -12,6 +12,8 @@
  */
 package com.epirus.local.server
 
+import com.epirus.local.ledger.LedgerConfiguration
+import com.epirus.local.utils.Folders
 import io.ktor.http.HttpMethod
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
@@ -22,9 +24,11 @@ import kotlin.test.assertEquals
 
 class ServerTest {
 
+    val ledgerConfiguration = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+
     @KtorExperimentalAPI
     @Test
-    fun requestTest(): Unit = withTestApplication({ nettyServer() }) {
+    fun requestTest(): Unit = withTestApplication({ nettyServer(ledgerConfiguration) }) {
         handleRequest(HttpMethod.Post, "/") {
             // addHeader(HttpHeaders.ContentType, ContentType.Application.Json.contentType)
             setBody("""{"jsonrpc":"2.0","method":"eth_estimateGas","params":[{

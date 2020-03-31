@@ -12,9 +12,9 @@
  */
 package com.epirus.local.ledger
 
-import com.epirus.local.cli.Account
 import com.epirus.local.server.Request
 import org.hyperledger.besu.ethereum.core.Hash
+import org.slf4j.LoggerFactory
 import org.web3j.abi.datatypes.Address
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
@@ -26,19 +26,29 @@ import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.net.URL
-import java.util.stream.Collectors
 
-class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: String) {
+class LocalLedger(private val ledgerConfiguration: LedgerConfiguration) {
 
     private val embeddedEthereum: EmbeddedEthereum
+    private val accounts = ledgerConfiguration.accounts
+    private val genesis = ledgerConfiguration.genesis
+    private val logger = LoggerFactory.getLogger(LocalLedger::class.java)
+
     init {
         embeddedEthereum =
                 EmbeddedEthereum(
-                        loadConfig(genesisPath),
+                        loadConfig(genesis!!),
                         PassthroughTracer())
     }
 
     private fun loadConfig(path: String): Configuration {
+        if (!accounts.isNullOrEmpty()) {
+            logger.info("""Starting ledger with generated genesis file: $genesis""")
+            logger.info("chainID = 1")
+            accounts.forEach { t -> logger.info("Account: ${t.address} created with 100 eth and private key: ${t.privateKey}") }
+        } else {
+            logger.info("""-> Starting ledger with genesis file: $genesis""")
+        }
         return Configuration(Address("0x0"), 0, URL("file:$path"))
     }
 
@@ -157,15 +167,15 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     }
 
     private fun loadCredentials(address: String?): Credentials {
-        val account = accounts.stream()
-                .filter { it.address == address }
-                .map { it.privateKey }
-                .collect(Collectors.toList())
+        val account: String? = accounts
+                ?.filter { it.address == address }
+                ?.map { it.privateKey }
+                ?.first()
 
-        return if (account.isEmpty())
+        return if (account.isNullOrEmpty())
             throw Exception("Private key not found! Use eth_sendRawTransaction for personal addresses")
         else
-            Credentials.create(account[0])
+            Credentials.create(account)
     }
 
     fun prepareParams(requestParams: HashMap<String, String>): HashMap<String, Any> {

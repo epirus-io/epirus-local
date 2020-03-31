@@ -12,4 +12,24 @@
  */
 package com.epirus.local.ledger
 
-class Configuration(val genesis: String?, val port: Int?, val host: String?, val directory: String?)
+import com.epirus.local.utils.Folders
+import org.junit.jupiter.api.Test
+import java.io.File
+
+class LedgerConfigurationTest {
+
+    private val ledgerConfig = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+    @Test
+    fun generateAccountsTest() {
+        val accounts = ledgerConfig.generateAccounts()
+        assert(accounts.isNotEmpty())
+    }
+
+    @Test
+    fun createGenesisTest() {
+        val genesis = ledgerConfig.createGenesis()
+        val genesisFile = File(genesis)
+        assert(genesisFile.exists())
+        genesisFile.delete()
+    }
+}

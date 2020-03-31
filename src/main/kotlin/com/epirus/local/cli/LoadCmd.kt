@@ -12,35 +12,59 @@
  */
 package com.epirus.local.cli
 
-import io.ktor.server.engine.commandLineEnvironment
+import com.epirus.local.ledger.LedgerConfiguration
+import com.epirus.local.server.nettyServer
+import io.ktor.server.engine.applicationEngineEnvironment
+import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.util.KtorExperimentalAPI
 import picocli.CommandLine
 import picocli.CommandLine.Command
+import sun.misc.Signal
 import java.util.concurrent.Callable
+import java.util.concurrent.TimeUnit
 
-@Command(name = "load", description = ["Load a previous configuration for epirus-local client"])
+@Command(name = "load",
+        description = ["Load a previous configuration for epirus-local client",
+            """Example: epirus-local load -g=folder/genesis.json"""])
 class LoadCmd : Callable<Int> {
 
     @CommandLine.Option(names = ["-g", "--genesis"],
             description = ["specify the genesis file"],
-            defaultValue = ".")
-    var directory: String = "."
+            defaultValue = "./genesis.json")
+    var genesis: String = "./genesis.json"
 
-    // FIXME: when specified => network permissions required
     @CommandLine.Option(names = ["-p", "--port"],
-            description = ["specify the port to run the client on"],
-            hidden = true)
-    var port: Int = 8080
+            description = ["specify the port to run the client on"])
+    var cliPort: Int = 8080
 
-    // FIXME: when specified => network permissions required
     @CommandLine.Option(names = ["-h", "--host"],
-            description = ["specify the host to run the client on"],
-            hidden = true)
-    var host: String = "0.0.0.0"
+            description = ["specify the host to run the client on"])
+    var cliHost: String = "0.0.0.0"
 
+    private lateinit var client: NettyApplicationEngine
+
+    @KtorExperimentalAPI
     override fun call(): Int {
-        embeddedServer(Netty, commandLineEnvironment(arrayOf())).start()
+
+        val ledgerConfiguration = LedgerConfiguration(
+                genesis = genesis)
+        val env = applicationEngineEnvironment {
+            connector {
+                host = cliHost
+                port = cliPort
+            }
+            module {
+                nettyServer(ledgerConfiguration)
+            }
+        }
+        client = embeddedServer(Netty, env)
+        client.start(true)
+
+        Signal.handle(Signal("INT")) { client.stop(1, 5, TimeUnit.SECONDS) }
         return 0
     }
 }

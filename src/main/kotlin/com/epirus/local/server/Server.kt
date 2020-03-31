@@ -12,7 +12,8 @@
  */
 package com.epirus.local.server
 
-import com.epirus.local.ledger.LedgerHelpers
+import com.epirus.local.ledger.LedgerConfiguration
+import com.epirus.local.ledger.LocalLedger
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -26,10 +27,9 @@ import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 
 @KtorExperimentalAPI
-fun Application.nettyServer() {
+fun Application.nettyServer(ledgerConfiguration: LedgerConfiguration) {
 
-    val localLedger = LedgerHelpers.createLedger(environment.config
-            .propertyOrNull("sun.java.command")?.getString())
+    val localLedger = LocalLedger(ledgerConfiguration)
     val requestHandler = RequestHandler(localLedger)
 
     install(DefaultHeaders)

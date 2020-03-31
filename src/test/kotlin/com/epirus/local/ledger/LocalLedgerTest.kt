@@ -12,9 +12,6 @@
  */
 package com.epirus.local.ledger
 
-import com.epirus.local.cli.Account
-import com.epirus.local.ledger.LedgerHelpers.Companion.createGenesis
-import com.epirus.local.ledger.LedgerHelpers.Companion.generateAccounts
 import com.epirus.local.server.Request
 import com.epirus.local.server.RequestHandler
 import com.epirus.local.utils.Folders
@@ -25,7 +22,6 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
-import java.io.File
 import java.math.BigInteger
 import org.junit.jupiter.api.Test
 import org.web3j.protocol.core.methods.response.TransactionReceipt
@@ -34,16 +30,14 @@ import kotlin.test.assertNotNull
 
 class LocalLedgerTest {
 
-    private val accounts: List<Account> = generateAccounts()
-    private val genesis: String
     private val localLedger: LocalLedger
     private val requestHandler: RequestHandler
+    private val ledgerConfiguration = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+    private val accounts = ledgerConfiguration.accounts!!
+
     init {
-        val tempDirPath = Folders.tempBuildFolder().absolutePath
-        genesis = createGenesis(tempDirPath, accounts)
-        localLedger = LocalLedger(accounts = accounts, genesisPath = genesis)
+        localLedger = LocalLedger(ledgerConfiguration)
         requestHandler = RequestHandler(localLedger)
-        File(genesis).delete()
     }
 
     @Test

@@ -12,15 +12,25 @@
  */
 package com.epirus.local.cli
 
-import io.ktor.server.engine.commandLineEnvironment
+import com.epirus.local.ledger.LedgerConfiguration
+import com.epirus.local.server.nettyServer
+import io.ktor.server.engine.applicationEngineEnvironment
+import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.util.KtorExperimentalAPI
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
+import sun.misc.Signal
 import java.util.concurrent.Callable
+import java.util.concurrent.TimeUnit
 
-@Command(name = "start", description = ["Creates a new configuration for epirus-local client",
-    "Example: epirus-local create -d=/tmp"])
+@Command(name = "start",
+        description = ["Creates a new configuration for epirus-local client",
+            "Example: epirus-local create -d=/tmp"
+        ])
 class StartCmd : Callable<Int> {
 
     @Option(names = ["-d", "--directory"],
@@ -28,20 +38,36 @@ class StartCmd : Callable<Int> {
             defaultValue = ".")
     var directory: String = "."
 
-    // FIXME: when specified => network permissions required
     @Option(names = ["-p", "--port"],
             description = ["specify the port to run the client on"],
             hidden = true)
-    var port: Int = 8080
+    var cliPort: Int = 8080
 
-    // FIXME: when specified => network permissions required
     @Option(names = ["-h", "--host"],
             description = ["specify the host to run the client on"],
         hidden = true)
-    var host: String = "127.0.0.1"
+    var cliHost: String = "127.0.0.1"
 
+    private lateinit var client: NettyApplicationEngine
+
+    @KtorExperimentalAPI
     override fun call(): Int {
-        embeddedServer(Netty, commandLineEnvironment(arrayOf())).start()
+
+        val ledgerConfiguration = LedgerConfiguration(
+                directory = directory)
+        val env = applicationEngineEnvironment {
+            connector {
+                host = cliHost
+                port = cliPort
+            }
+            module {
+                nettyServer(ledgerConfiguration)
+            }
+        }
+        client = embeddedServer(Netty, env)
+        client.start(true)
+
+        Signal.handle(Signal("INT")) { client.stop(1, 5, TimeUnit.SECONDS) }
         return 0
     }
 }
