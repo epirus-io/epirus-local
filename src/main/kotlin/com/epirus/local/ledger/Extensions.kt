@@ -13,7 +13,6 @@
 package com.epirus.local.ledger
 
 import org.web3j.protocol.core.methods.response.EthBlock
-import org.web3j.protocol.core.methods.response.TransactionReceipt
 import kotlin.streams.toList
 
 fun EthBlock.Block.toHashMap(fullTx: Boolean): HashMap<String, Any> {
@@ -64,22 +63,4 @@ fun EthBlock.TransactionObject.toHashMap(): HashMap<String, Any> {
     txMap["r"] = r
     txMap["s"] = s
     return txMap
-}
-
-fun TransactionReceipt.toHashMap(): HashMap<String, Any> {
-    val txReceiptMap = HashMap<String, Any>()
-    txReceiptMap["transactionHash"] = transactionHash
-    txReceiptMap["transactionIndex"] = transactionIndex.toString(16)
-    txReceiptMap["blockHash"] = blockHash
-    txReceiptMap["blockNumber"] = blockNumber.toString(16)
-    txReceiptMap["from"] = from
-    txReceiptMap["to"] = to ?: ""
-    txReceiptMap["cumulativeGasUsed"] = cumulativeGasUsed.toString(16)
-    txReceiptMap["gasUsed"] = gasUsed.toString(16)
-    txReceiptMap["contractAddress"] = contractAddress ?: ""
-    txReceiptMap["logs"] = logs ?: ""
-    txReceiptMap["logsBloom"] = logsBloom ?: ""
-    txReceiptMap["root"] = root ?: ""
-    txReceiptMap["status"] = status ?: ""
-    return txReceiptMap
 }
