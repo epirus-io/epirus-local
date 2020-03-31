@@ -20,6 +20,7 @@ import java.io.File
 
 class LedgerHelpers {
     companion object {
+        val logger = LoggerFactory.getLogger(LedgerHelpers::class.java)
 
         fun createGenesis(directory: String, accounts: List<Account>): String {
             val genesis = File(directory.removeSuffix("/") + "/genesis.json")
@@ -66,27 +67,21 @@ class LedgerHelpers {
             val host = config.host ?: "127.0.0.1"
             val genesisPath = config.genesis
 
-            var log: String
-            val localLedger = if (genesisPath.isNullOrBlank()) {
+            return if (genesisPath.isNullOrBlank()) {
                 val accounts = generateAccounts()
                 val genesis = createGenesis(directory, accounts)
-                log = """-> Starting ledger with generated genesis file: $genesis
+                logger.info("""-> Starting ledger with generated genesis file: $genesis
             -> chainID = 1
             -> Port = $port
-            -> Host = $host"""
-                accounts.stream().forEach { t -> log += "\n[*] ${t.address} : 100 eth\n\tPrivate key: ${t.privateKey}" }
+            -> Host = $host""")
+                accounts.stream().forEach { t -> logger.info("Account: ${t.address} created with 100 eth and private key: ${t.privateKey}") }
                 LocalLedger(accounts, genesis)
             } else {
-                log = """-> Starting ledger with genesis file: $genesisPath
+                logger.info("""-> Starting ledger with genesis file: $genesisPath
             -> Port = $port
-            -> Host = $host""".trimIndent()
+            -> Host = $host""".trimIndent())
                 LocalLedger(genesisPath = genesisPath)
             }
-
-            val logger = LoggerFactory.getLogger(LedgerHelpers::class.java)
-            logger.info(log)
-
-            return localLedger
         }
 
         fun parseArguments(command: String?): Configuration {
