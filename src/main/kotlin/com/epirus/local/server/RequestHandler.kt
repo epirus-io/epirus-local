@@ -31,8 +31,8 @@ class RequestHandler(private val localLedger: LocalLedger) {
             "eth_sendTransaction" -> localLedger.eth_sendTransaction(request)
             "eth_sendRawTransaction" -> localLedger.eth_sendRawTransaction(request)
             "eth_estimateGas" -> localLedger.eth_estimateGas(request)
-            // "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request)
-            // "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request)
+            // "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request) FIXME: Throws some exception
+            // "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request) FIXME: Throws some exception
             "eth_getBlockTransactionCountByHash" -> localLedger.eth_getBlockTransactionCountByHash(request)
             "eth_getBlockTransactionCountByNumber" -> localLedger.eth_getBlockTransactionCountByNumber(request)
             "eth_getTransactionReceipt" -> localLedger.eth_getTransactionReceipt(request)
