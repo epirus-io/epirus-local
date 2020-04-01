@@ -10,10 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.cli
+package org.epirus.local.cli
 
-import com.epirus.local.ledger.LedgerConfiguration
-import com.epirus.local.server.nettyServer
+import org.epirus.local.ledger.LedgerConfiguration
+import org.epirus.local.server.nettyServer
 import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer

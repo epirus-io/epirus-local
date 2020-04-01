@@ -10,17 +10,18 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local.server
 
 import com.beust.klaxon.Klaxon
-import com.epirus.local.ledger.LocalLedger
+import org.epirus.local.ledger.LocalLedger
 
 class RequestHandler(private val localLedger: LocalLedger) {
 
     fun processRequest(jsonRequest: String): String {
         val request = JsonParser().parse(jsonRequest)
         val response = makeCall(request)
-        return Klaxon().toJsonString(Response(request.id, request.jsonrpc, response ?: "null"))
+        return Klaxon().toJsonString(Response(request.id, request.jsonrpc, response
+                ?: "null"))
     }
 
     fun makeCall(request: Request): Any? {

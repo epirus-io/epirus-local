@@ -10,11 +10,11 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.ledger
+package org.epirus.local.ledger
 
-import com.epirus.local.server.Request
-import com.epirus.local.server.RequestHandler
-import com.epirus.local.utils.Folders
+import org.epirus.local.server.Request
+import org.epirus.local.server.RequestHandler
+import org.epirus.local.utils.Folders
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference

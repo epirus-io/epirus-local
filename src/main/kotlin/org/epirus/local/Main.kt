@@ -10,10 +10,12 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local
 
-class Response(
-    val id: Long = 0,
-    val jsonrpc: String = "2.0",
-    val result: Any = ""
-)
+import org.epirus.local.cli.EpirusLocalCLI
+import picocli.CommandLine
+
+fun main(args: Array<String>) {
+    if (args.isEmpty()) CommandLine(EpirusLocalCLI()).execute("help")
+    else CommandLine(EpirusLocalCLI()).execute(*args)
+}

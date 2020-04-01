@@ -10,10 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local.server
 
-import com.epirus.local.ledger.LedgerConfiguration
-import com.epirus.local.utils.Folders
+import org.epirus.local.ledger.LedgerConfiguration
+import org.epirus.local.utils.Folders
 import io.ktor.http.HttpMethod
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody

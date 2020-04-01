@@ -10,9 +10,9 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.ledger
+package org.epirus.local.ledger
 
-import com.epirus.local.cli.Account
+import org.epirus.local.cli.Account
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.Keys
 import java.io.File

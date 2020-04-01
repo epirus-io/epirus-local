@@ -75,7 +75,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'com.epirus.local.MainKt'
+    mainClassName = 'org.epirus.local.MainKt'
 }
 
 jar {
