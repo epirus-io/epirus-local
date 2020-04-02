@@ -22,7 +22,7 @@ object Folders {
                         "build",
                         "tmp",
                         "testing",
-                        java.lang.Long.toString(System.currentTimeMillis())).joinToString(File.separator))
+                        System.currentTimeMillis().toString()).joinToString(File.separator))
         if (!tmpTestLocation.mkdirs()) throw RuntimeIOException(
                 "Unable to create folder at " + tmpTestLocation.absolutePath)
         return tmpTestLocation

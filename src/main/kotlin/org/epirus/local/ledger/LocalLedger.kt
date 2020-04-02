@@ -30,24 +30,22 @@ import java.net.URL
 class LocalLedger(private val ledgerConfiguration: LedgerConfiguration) {
 
     private val embeddedEthereum: EmbeddedEthereum
-    private val accounts = ledgerConfiguration.accounts
-    private val genesis = ledgerConfiguration.genesis
     private val logger = LoggerFactory.getLogger(LocalLedger::class.java)
 
     init {
         embeddedEthereum =
                 EmbeddedEthereum(
-                        loadConfig(genesis!!),
+                        loadConfig(ledgerConfiguration.genesis!!),
                         PassthroughTracer())
     }
 
     private fun loadConfig(path: String): Configuration {
-        if (!accounts.isNullOrEmpty()) {
-            logger.info("""Starting ledger with generated genesis file: $genesis""")
+        if (!ledgerConfiguration.accounts.isNullOrEmpty()) {
+            logger.info("""Starting ledger with generated genesis file: ${ledgerConfiguration.genesis}""")
             logger.info("chainID = 1")
-            accounts.forEach { t -> logger.info("Account: ${t.address} created with 100 eth and private key: ${t.privateKey}") }
+            ledgerConfiguration.accounts!!.forEach { t -> logger.info("Account: ${t.address} created with 100 eth and private key: ${t.privateKey}") }
         } else {
-            logger.info("""-> Starting ledger with genesis file: $genesis""")
+            logger.info("""-> Starting ledger with genesis file: ${ledgerConfiguration.genesis}""")
         }
         return Configuration(Address("0x0"), 0, URL("file:$path"))
     }
@@ -167,7 +165,7 @@ class LocalLedger(private val ledgerConfiguration: LedgerConfiguration) {
     }
 
     private fun loadCredentials(address: String?): Credentials {
-        val account: String? = accounts
+        val account: String? = ledgerConfiguration.accounts
                 ?.filter { it.address == address }
                 ?.map { it.privateKey }
                 ?.first()

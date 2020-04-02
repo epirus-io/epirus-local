@@ -35,7 +35,7 @@ class LoadCmd : Callable<Int> {
     @CommandLine.Option(names = ["-g", "--genesis"],
             description = ["specify the genesis file"],
             defaultValue = "./genesis.json")
-    var genesis: String = "./genesis.json"
+    var genesisFilePath: String = "./genesis.json"
 
     @CommandLine.Option(names = ["-p", "--port"],
             description = ["specify the port to run the client on"])
@@ -51,11 +51,11 @@ class LoadCmd : Callable<Int> {
     override fun call(): Int {
 
         val ledgerConfiguration = LedgerConfiguration(
-                genesis = genesis)
+                genesis = genesisFilePath)
         val env = applicationEngineEnvironment {
             connector {
-                host = cliHost
-                port = cliPort
+                host = this.host
+                port = this.port
             }
             module {
                 nettyServer(ledgerConfiguration)
