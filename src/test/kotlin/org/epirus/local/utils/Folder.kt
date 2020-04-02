@@ -14,17 +14,15 @@ package org.epirus.local.utils
 
 import org.eclipse.jetty.io.RuntimeIOException
 import java.io.File
-import java.lang.String
 
 object Folders {
     fun tempBuildFolder(): File {
         val tmpTestLocation = File(
-                String.join(
-                        File.separator,
+                arrayOf(
                         "build",
                         "tmp",
                         "testing",
-                        java.lang.Long.toString(System.currentTimeMillis())))
+                        java.lang.Long.toString(System.currentTimeMillis())).joinToString(File.separator))
         if (!tmpTestLocation.mkdirs()) throw RuntimeIOException(
                 "Unable to create folder at " + tmpTestLocation.absolutePath)
         return tmpTestLocation
