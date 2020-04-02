@@ -21,7 +21,7 @@ Epirus-local is a local ethereum client, similar to what Ganache provides, writt
 ## How to build
 `git clone https://github.com/epirus-io/epirus-local && cd epirus-local`
     
-`./gradlew build test`
+`./gradlew installDist`
     
 `java -jar build/libs/epirus-local-all.jar [command]`
     
