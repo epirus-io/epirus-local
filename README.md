@@ -23,10 +23,10 @@ Epirus-local is a local ethereum client, similar to what Ganache provides, writt
     
 `./gradlew installDist`
     
-#### Run in linux:
+#### Run in Linux:
 `build/install/epirus-local/bin/epirus-local [command]`
     
-#### Run in windows
+#### Run in Windows
 `build\install\epirus-local\bin\epirus-local [command]`
 
 ## Commands
