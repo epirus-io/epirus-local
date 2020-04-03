@@ -54,8 +54,8 @@ class LoadCmd : Callable<Int> {
                 genesis = genesisFilePath)
         val env = applicationEngineEnvironment {
             connector {
-                host = this.host
-                port = this.port
+                host = cliHost
+                port = cliPort
             }
             module {
                 nettyServer(ledgerConfiguration)
