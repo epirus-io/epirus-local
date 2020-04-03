@@ -16,7 +16,7 @@
    :target: https://gitter.im/web3j/web3j
    :alt: Join the chat at https://gitter.im/web3j/web3j
 
-Epirus-local is a local ethereum client, similar to what Ganache provides, written in Kotlin.
+Epirus-local is a local ethereum client, similar to what [Ganache](https://github.com/trufflesuite/ganache) provides, written in Kotlin.
 
 
 ## Features
