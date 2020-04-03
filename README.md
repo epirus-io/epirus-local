@@ -1,21 +1,5 @@
 # Epirus-local
 
-.. image:: https://api.travis-ci.org/web3j/web3j-docs.svg?branch=master
-   :target: https://docs.web3j.io
-   :alt: Documentation Status
-
-.. image:: https://travis-ci.org/epirus-io/epirus-local.svg?branch=master
-   :target: https://travis-ci.org/epirus-io/epirus-local
-   :alt: Build Status
-
-.. image:: https://codecov.io/gh/epirus-io/epirus-local/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/epirus-io/epirus-local
-   :alt: codecov
-
-.. image:: https://badges.gitter.im/web3j/web3j.svg
-   :target: https://gitter.im/web3j/web3j
-   :alt: Join the chat at https://gitter.im/web3j/web3j
-
 Epirus-local is a local ethereum client, similar to what [Ganache](https://github.com/trufflesuite/ganache) provides, written in Kotlin.
 
 
