@@ -39,12 +39,14 @@ class StartCmd : Callable<Int> {
     var directory: String = "."
 
     @Option(names = ["-p", "--port"],
-            description = ["specify the port to run the client on"])
-    var cliPort: Int = 8080
+            description = ["specify the port to run the client on"],
+            hidden = true)
+    var port: Int = 8080
 
     @Option(names = ["-h", "--host"],
-            description = ["specify the host to run the client on"])
-    var cliHost: String = "127.0.0.1"
+            description = ["specify the host to run the client on"],
+        hidden = true)
+    var host: String = "127.0.0.1"
 
     private lateinit var client: NettyApplicationEngine
 
@@ -55,8 +57,8 @@ class StartCmd : Callable<Int> {
                 directory = directory)
         val env = applicationEngineEnvironment {
             connector {
-                host = cliHost
-                port = cliPort
+                host = host
+                port = port
             }
             module {
                 nettyServer(ledgerConfiguration)
