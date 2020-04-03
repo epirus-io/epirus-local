@@ -10,9 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local.server
 
-import com.epirus.local.ledger.LedgerHelpers
+import org.epirus.local.ledger.LedgerConfiguration
+import org.epirus.local.ledger.LocalLedger
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -26,10 +27,9 @@ import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 
 @KtorExperimentalAPI
-fun Application.nettyServer() {
+fun Application.nettyServer(ledgerConfiguration: LedgerConfiguration) {
 
-    val localLedger = LedgerHelpers.createLedger(environment.config
-            .propertyOrNull("sun.java.command")?.getString())
+    val localLedger = LocalLedger(ledgerConfiguration)
     val requestHandler = RequestHandler(localLedger)
 
     install(DefaultHeaders)

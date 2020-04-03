@@ -10,8 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local.server
 
+import org.epirus.local.ledger.LedgerConfiguration
+import org.epirus.local.utils.Folders
 import io.ktor.http.HttpMethod
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
@@ -22,9 +24,11 @@ import kotlin.test.assertEquals
 
 class ServerTest {
 
+    val ledgerConfiguration = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+
     @KtorExperimentalAPI
     @Test
-    fun requestTest(): Unit = withTestApplication({ nettyServer() }) {
+    fun requestTest(): Unit = withTestApplication({ nettyServer(ledgerConfiguration) }) {
         handleRequest(HttpMethod.Post, "/") {
             // addHeader(HttpHeaders.ContentType, ContentType.Application.Json.contentType)
             setBody("""{"jsonrpc":"2.0","method":"eth_estimateGas","params":[{

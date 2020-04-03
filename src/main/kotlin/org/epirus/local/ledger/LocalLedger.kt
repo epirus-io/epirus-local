@@ -10,11 +10,11 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.ledger
+package org.epirus.local.ledger
 
-import com.epirus.local.cli.Account
-import com.epirus.local.server.Request
+import org.epirus.local.server.Request
 import org.hyperledger.besu.ethereum.core.Hash
+import org.slf4j.LoggerFactory
 import org.web3j.abi.datatypes.Address
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
@@ -23,23 +23,30 @@ import org.web3j.evm.Configuration
 import org.web3j.evm.EmbeddedEthereum
 import org.web3j.evm.PassthroughTracer
 import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.net.URL
-import java.util.stream.Collectors
 
-class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: String) {
+class LocalLedger(private val ledgerConfiguration: LedgerConfiguration) {
 
     private val embeddedEthereum: EmbeddedEthereum
+    private val logger = LoggerFactory.getLogger(LocalLedger::class.java)
+
     init {
         embeddedEthereum =
                 EmbeddedEthereum(
-                        loadConfig(genesisPath),
+                        loadConfig(ledgerConfiguration.genesis!!),
                         PassthroughTracer())
     }
 
     private fun loadConfig(path: String): Configuration {
+        if (!ledgerConfiguration.accounts.isNullOrEmpty()) {
+            logger.info("""Starting ledger with generated genesis file: ${ledgerConfiguration.genesis}""")
+            logger.info("chainID = 1")
+            ledgerConfiguration.accounts!!.forEach { t -> logger.info("Account: ${t.address} created with 100 eth and private key: ${t.privateKey}") }
+        } else {
+            logger.info("""-> Starting ledger with genesis file: ${ledgerConfiguration.genesis}""")
+        }
         return Configuration(Address("0x0"), 0, URL("file:$path"))
     }
 
@@ -54,11 +61,11 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun eth_getBalance(request: Request): Any {
+    fun eth_getBalance(request: Request): Any? {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
         return embeddedEthereum.ethGetBalance(Address(requestParams[0]),
-                if (request.params.getOrNull(1) == null) "latest" else request.params[1]) ?: "0"
+                if (request.params.getOrNull(1) == null) "latest" else request.params[1])
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -77,18 +84,19 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun eth_getBlockByHash(request: Request): Any {
+    fun eth_getBlockByHash(request: Request): Any? {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
-        return embeddedEthereum.ethBlockByHash(requestParams[0], requestParams[1].toBoolean()) ?: "null"
+        return embeddedEthereum.ethBlockByHash(requestParams[0], requestParams[1].toBoolean())
+                ?.toHashMap(requestParams[1].toBoolean())
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun eth_getBlockByNumber(request: Request): Any {
+    fun eth_getBlockByNumber(request: Request): Any? {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.size < 2) return "Insufficient parameters"
-        val block: EthBlock.Block? = embeddedEthereum.ethBlockByNumber(requestParams[0].removePrefix("0x"), requestParams[1].toBoolean())
-        return block?.toHashMap(requestParams[1].toBoolean()) ?: "null"
+        return embeddedEthereum.ethBlockByNumber(requestParams[0].removePrefix("0x"), requestParams[1].toBoolean())
+                ?.toHashMap(requestParams[1].toBoolean())
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -131,10 +139,10 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun eth_getTransactionReceipt(request: Request): Any {
+    fun eth_getTransactionReceipt(request: Request): Any? {
         val requestParams: List<String> = request.params as List<String>
         if (requestParams.isEmpty()) return "Insufficient parameters"
-        return embeddedEthereum.getTransactionReceipt(requestParams[0].removePrefix("0x"))?.toHashMap() ?: "null"
+        return embeddedEthereum.getTransactionReceipt(requestParams[0].removePrefix("0x"))
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -157,15 +165,15 @@ class LocalLedger(val accounts: List<Account> = emptyList(), val genesisPath: St
     }
 
     private fun loadCredentials(address: String?): Credentials {
-        val account = accounts.stream()
-                .filter { it.address == address }
-                .map { it.privateKey }
-                .collect(Collectors.toList())
+        val account: String? = ledgerConfiguration.accounts
+                ?.filter { it.address == address }
+                ?.map { it.privateKey }
+                ?.first()
 
-        return if (account.isEmpty())
+        return if (account.isNullOrEmpty())
             throw Exception("Private key not found! Use eth_sendRawTransaction for personal addresses")
         else
-            Credentials.create(account[0])
+            Credentials.create(account)
     }
 
     fun prepareParams(requestParams: HashMap<String, String>): HashMap<String, Any> {

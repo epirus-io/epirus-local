@@ -10,11 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local.server
 
-class Request(
-    val jsonrpc: String,
-    val method: String = "",
-    val params: Any = emptyList<String>(),
-    val id: Long = 0
+class Response(
+    val id: Long = 0,
+    val jsonrpc: String = "2.0",
+    val result: Any = ""
 )

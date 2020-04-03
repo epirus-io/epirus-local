@@ -10,23 +10,26 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.utils
+package org.epirus.local.ledger
 
-import org.eclipse.jetty.io.RuntimeIOException
+import org.epirus.local.utils.Folders
+import org.junit.jupiter.api.Test
 import java.io.File
-import java.lang.String
 
-object Folders {
-    fun tempBuildFolder(): File {
-        val tmpTestLocation = File(
-                String.join(
-                        File.separator,
-                        "build",
-                        "tmp",
-                        "testing",
-                        java.lang.Long.toString(System.currentTimeMillis())))
-        if (!tmpTestLocation.mkdirs()) throw RuntimeIOException(
-                "Unable to create folder at " + tmpTestLocation.absolutePath)
-        return tmpTestLocation
+class LedgerConfigurationTest {
+
+    private val ledgerConfig = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+    @Test
+    fun generateAccountsTest() {
+        val accounts = ledgerConfig.generateAccounts()
+        assert(accounts.isNotEmpty())
+    }
+
+    @Test
+    fun createGenesisTest() {
+        val genesis = ledgerConfig.createGenesis()
+        val genesisFile = File(genesis)
+        assert(genesisFile.exists())
+        genesisFile.delete()
     }
 }

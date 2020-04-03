@@ -10,20 +10,21 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.server
+package org.epirus.local.server
 
 import com.beust.klaxon.Klaxon
-import com.epirus.local.ledger.LocalLedger
+import org.epirus.local.ledger.LocalLedger
 
 class RequestHandler(private val localLedger: LocalLedger) {
 
     fun processRequest(jsonRequest: String): String {
         val request = JsonParser().parse(jsonRequest)
         val response = makeCall(request)
-        return Klaxon().toJsonString(Response(request.id, request.jsonrpc, response))
+        return Klaxon().toJsonString(Response(request.id, request.jsonrpc, response
+                ?: "null"))
     }
 
-    fun makeCall(request: Request): Any {
+    fun makeCall(request: Request): Any? {
         return when (request.method) {
             "eth_blockNumber" -> localLedger.eth_blockNumber()
             "eth_getTransactionCount" -> localLedger.eth_getTransactionCount(request)
@@ -31,8 +32,8 @@ class RequestHandler(private val localLedger: LocalLedger) {
             "eth_sendTransaction" -> localLedger.eth_sendTransaction(request)
             "eth_sendRawTransaction" -> localLedger.eth_sendRawTransaction(request)
             "eth_estimateGas" -> localLedger.eth_estimateGas(request)
-            // "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request) FIXME: Throws some exception
-            // "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request) FIXME: Throws some exception
+            "eth_getBlockByHash" -> localLedger.eth_getBlockByHash(request) // FIXME: Throws java.lang.ClassCastException: class org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionCompleteResult cannot be cast to class org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionHashResult (org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionCompleteResult and org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionHashResult are in unnamed module of loader 'app')
+            "eth_getBlockByNumber" -> localLedger.eth_getBlockByNumber(request) // FIXME: Throws java.lang.ClassCastException: class org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionCompleteResult cannot be cast to class org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionHashResult (org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionCompleteResult and org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionHashResult are in unnamed module of loader 'app')
             "eth_getBlockTransactionCountByHash" -> localLedger.eth_getBlockTransactionCountByHash(request)
             "eth_getBlockTransactionCountByNumber" -> localLedger.eth_getBlockTransactionCountByNumber(request)
             "eth_getTransactionReceipt" -> localLedger.eth_getTransactionReceipt(request)

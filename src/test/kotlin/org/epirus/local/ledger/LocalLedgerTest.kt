@@ -10,14 +10,11 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.epirus.local.ledger
+package org.epirus.local.ledger
 
-import com.epirus.local.cli.Account
-import com.epirus.local.ledger.LedgerHelpers.Companion.createGenesis
-import com.epirus.local.ledger.LedgerHelpers.Companion.generateAccounts
-import com.epirus.local.server.Request
-import com.epirus.local.server.RequestHandler
-import com.epirus.local.utils.Folders
+import org.epirus.local.server.Request
+import org.epirus.local.server.RequestHandler
+import org.epirus.local.utils.Folders
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.TypeReference
@@ -25,24 +22,22 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
-import java.io.File
 import java.math.BigInteger
 import org.junit.jupiter.api.Test
+import org.web3j.protocol.core.methods.response.TransactionReceipt
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class LocalLedgerTest {
 
-    private val accounts: List<Account> = generateAccounts()
-    private val genesis: String
     private val localLedger: LocalLedger
     private val requestHandler: RequestHandler
+    private val ledgerConfiguration = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+    private val accounts = ledgerConfiguration.accounts!!
+
     init {
-        val tempDirPath = Folders.tempBuildFolder().absolutePath
-        genesis = createGenesis(tempDirPath, accounts)
-        localLedger = LocalLedger(accounts = accounts, genesisPath = genesis)
+        localLedger = LocalLedger(ledgerConfiguration)
         requestHandler = RequestHandler(localLedger)
-        File(genesis).delete()
     }
 
     @Test
@@ -83,13 +78,13 @@ class LocalLedgerTest {
                 Request("2.0",
                         "eth_getTransactionReceipt",
                         listOf(txHash as String),
-                        1))
+                        1)) as TransactionReceipt?
         assertNotNull(txReceipt)
 
         assertEquals("0x1", requestHandler.makeCall(Request("2.0",
                 "eth_getBlockTransactionCountByHash",
                 listOf(
-                        (txReceipt as HashMap<String, String>)["blockHash"]!!
+                        txReceipt.blockHash
                 ),
                 1)))
 
@@ -169,14 +164,15 @@ class LocalLedgerTest {
         val hash: String = requestHandler.makeCall(Request("2.0", "eth_sendTransaction", tx, 1)) as String
 
         // Getting transaction receipt
-        val receipt: HashMap<String, Any> = requestHandler.makeCall(Request("2.0", "eth_getTransactionReceipt", listOf(hash), 1)) as HashMap<String, Any>
+        val receipt = requestHandler.makeCall(Request("2.0", "eth_getTransactionReceipt", listOf(hash), 1)) as TransactionReceipt
+        assertNotNull(receipt)
 
         // Calling newNumber function using normal transaction
         val functionConstruct = Function("newNumber", listOf(org.web3j.abi.datatypes.generated.Int256(1)), listOf())
         val txConstruct = FunctionEncoder.encode(functionConstruct)
         val tx2 = HashMap<String, String>()
         tx2["from"] = accounts[5].address
-        tx2["to"] = receipt["contractAddress"] as String
+        tx2["to"] = receipt.contractAddress
         tx2["data"] = txConstruct
         requestHandler.makeCall(Request("2.0", "eth_sendTransaction", tx2, 1)) as String
 
@@ -185,14 +181,14 @@ class LocalLedgerTest {
         val txData = FunctionEncoder.encode(function)
         val call = HashMap<String, String>()
         call["from"] = accounts[5].address
-        call["to"] = receipt["contractAddress"] as String
+        call["to"] = receipt.contractAddress as String
         call["data"] = txData
         call["tag"] = "latest"
         val result = requestHandler.makeCall(Request("2.0", "eth_call", call, 1))
         assertEquals("0x0000000000000000000000000000000000000000000000000000000000000001", result)
 
         // Getting code
-        val code = requestHandler.makeCall(Request("2.0", "eth_getCode", listOf(receipt["contractAddress"] as String, "latest"), 1))
+        val code = requestHandler.makeCall(Request("2.0", "eth_getCode", listOf(receipt.contractAddress, "latest"), 1))
         assertEquals("0x60806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416632ca832648114604d578063f2c9ecd8146064575b600080fd5b348015605857600080fd5b5060626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b600055565b600054905600a165627a7a7230582072c890936b2bc717b79b9bbca671d8a983b98822147b264ff0c74766597a9d8f0029", code)
     }
 }
