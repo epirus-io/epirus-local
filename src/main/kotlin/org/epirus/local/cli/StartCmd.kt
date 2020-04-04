@@ -53,9 +53,13 @@ class StartCmd : Callable<Int> {
 
     @KtorExperimentalAPI
     override fun call(): Int {
+        val accounts = GenesisUtils.generateAccounts()
+        val genesisPath = GenesisUtils.createGenesis(directory, accounts)
 
         val ledgerConfiguration = LedgerConfiguration(
-                directory = directory)
+                genesis = genesisPath,
+                accounts = accounts
+        )
         val env = applicationEngineEnvironment {
             connector {
                 host = cliHost

@@ -10,24 +10,25 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.epirus.local.ledger
+package org.epirus.local.cli
 
 import org.epirus.local.utils.Folders
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class LedgerConfigurationTest {
+class GenesisUtilsTest {
 
-    private val ledgerConfig = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
     @Test
     fun generateAccountsTest() {
-        val accounts = ledgerConfig.generateAccounts()
+        val accounts = GenesisUtils.generateAccounts()
         assert(accounts.isNotEmpty())
     }
 
     @Test
     fun createGenesisTest() {
-        val genesis = ledgerConfig.createGenesis()
+        val accounts = GenesisUtils.generateAccounts()
+        val directory = Folders.tempBuildFolder().absolutePath
+        val genesis = GenesisUtils.createGenesis(directory, accounts)
         val genesisFile = File(genesis)
         assert(genesisFile.exists())
         genesisFile.delete()

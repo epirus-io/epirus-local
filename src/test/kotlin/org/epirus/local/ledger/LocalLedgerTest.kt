@@ -12,6 +12,8 @@
  */
 package org.epirus.local.ledger
 
+import org.epirus.local.cli.Account
+import org.epirus.local.cli.GenesisUtils
 import org.epirus.local.server.Request
 import org.epirus.local.server.RequestHandler
 import org.epirus.local.utils.Folders
@@ -32,10 +34,12 @@ class LocalLedgerTest {
 
     private val localLedger: LocalLedger
     private val requestHandler: RequestHandler
-    private val ledgerConfiguration = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
-    private val accounts = ledgerConfiguration.accounts!!
+    private val ledgerConfiguration: LedgerConfiguration
+    private val accounts: List<Account> = GenesisUtils.generateAccounts()
 
     init {
+        val genesisPath = GenesisUtils.createGenesis(Folders.tempBuildFolder().absolutePath, accounts)
+        ledgerConfiguration = LedgerConfiguration(genesisPath, accounts)
         localLedger = LocalLedger(ledgerConfiguration)
         requestHandler = RequestHandler(localLedger)
     }
