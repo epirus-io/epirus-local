@@ -1,4 +1,3 @@
-![Documentation Status](https://api.travis-ci.org/web3j/web3j-docs.svg?branch=master)
 ![Build Status](https://travis-ci.com/epirus-io/epirus-local.svg?branch=master)
 ![codecov](https://codecov.io/gh/epirus-io/epirus-local/branch/master/graph/badge.svg)
 ![Join the chat at https://gitter.im/web3j/web3j](https://badges.gitter.im/web3j/web3j.svg)
