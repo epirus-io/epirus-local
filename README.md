@@ -41,9 +41,9 @@ So far, epirus-local supports two subcommands:
 
 - start: generates a new genesis file with 10 accounts filled with 100 ether via providing a directory where to put it.
 
-![](https://raw.githubusercontent.com/epirus-io/epirus-local/f7af52b5b1d77cbe21bb2066b9072586946cd6e4/resources/epirus-local-start-command-demo.gif)
+![start command](https://raw.githubusercontent.com/epirus-io/epirus-local/master/resources/epirus-local-start-command-demo.gif)
 
 - load: loads a pre-existing genesis-file from a certain path.
 
-![](https://raw.githubusercontent.com/epirus-io/epirus-local/f7af52b5b1d77cbe21bb2066b9072586946cd6e4/resources/epirus-local-load-command-demo.gif)
+![load command](https://raw.githubusercontent.com/epirus-io/epirus-local/master/resources/epirus-local-load-command-demo.gif)
 
