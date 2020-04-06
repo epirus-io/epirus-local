@@ -19,12 +19,17 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
+import org.epirus.local.cli.Account
+import org.epirus.local.cli.GenesisUtils
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ServerTest {
 
-    val ledgerConfiguration = LedgerConfiguration(directory = Folders.tempBuildFolder().absolutePath)
+    private val accounts: List<Account> = GenesisUtils.generateAccounts()
+
+    private val genesisPath = GenesisUtils.createGenesis(Folders.tempBuildFolder().absolutePath, accounts)
+    private val ledgerConfiguration = LedgerConfiguration(genesisPath, accounts)
 
     @KtorExperimentalAPI
     @Test

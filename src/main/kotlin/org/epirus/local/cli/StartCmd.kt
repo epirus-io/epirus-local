@@ -21,6 +21,7 @@ import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.util.KtorExperimentalAPI
+import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import sun.misc.Signal
@@ -38,21 +39,27 @@ class StartCmd : Callable<Int> {
             defaultValue = ".")
     var directory: String = "."
 
-    @Option(names = ["-p", "--port"],
-            description = ["specify the port to run the client on"])
+    @CommandLine.Option(names = ["-p", "--port"],
+            description = ["specify the port to run the client on"],
+            paramLabel = "port")
     var cliPort: Int = 8080
 
-    @Option(names = ["-h", "--host"],
-            description = ["specify the host to run the client on"])
-    var cliHost: String = "127.0.0.1"
+    @CommandLine.Option(names = ["-h", "--host"],
+            description = ["specify the host to run the client on"],
+            paramLabel = "host")
+    var cliHost: String = "0.0.0.0"
 
     private lateinit var client: NettyApplicationEngine
 
     @KtorExperimentalAPI
     override fun call(): Int {
+        val accounts = GenesisUtils.generateAccounts()
+        val genesisPath = GenesisUtils.createGenesis(directory, accounts)
 
         val ledgerConfiguration = LedgerConfiguration(
-                directory = directory)
+                genesis = genesisPath,
+                accounts = accounts
+        )
         val env = applicationEngineEnvironment {
             connector {
                 host = cliHost

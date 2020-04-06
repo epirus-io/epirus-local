@@ -38,20 +38,20 @@ class LoadCmd : Callable<Int> {
     var genesisFilePath: String = "./genesis.json"
 
     @CommandLine.Option(names = ["-p", "--port"],
-            description = ["specify the port to run the client on"])
+            description = ["specify the port to run the client on"],
+            paramLabel = "port")
     var cliPort: Int = 8080
 
     @CommandLine.Option(names = ["-h", "--host"],
-            description = ["specify the host to run the client on"])
+            description = ["specify the host to run the client on"],
+            paramLabel = "host")
     var cliHost: String = "0.0.0.0"
 
     private lateinit var client: NettyApplicationEngine
 
     @KtorExperimentalAPI
     override fun call(): Int {
-
-        val ledgerConfiguration = LedgerConfiguration(
-                genesis = genesisFilePath)
+        val ledgerConfiguration = LedgerConfiguration(genesis = genesisFilePath)
         val env = applicationEngineEnvironment {
             connector {
                 host = cliHost
