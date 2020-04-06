@@ -51,10 +51,7 @@ class LoadCmd : Callable<Int> {
 
     @KtorExperimentalAPI
     override fun call(): Int {
-        val ledgerConfiguration = LedgerConfiguration(
-                genesis = genesisFilePath,
-                accounts = null
-        )
+        val ledgerConfiguration = LedgerConfiguration(genesis = genesisFilePath)
         val env = applicationEngineEnvironment {
             connector {
                 host = cliHost
