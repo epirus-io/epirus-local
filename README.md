@@ -75,4 +75,4 @@ curl -X POST --data '{"jsonrpc":"2.0","method":"eth_sendTransaction","params":[{
 {"id" : 1, "jsonrpc" : "2.0", "result" : "0xc631caa67cab48ead77a58321bbb0c76f4060751a4bb3d5b45b99c4a68b1a7b7"}
 ```
 
-For more information about the requests, check the Ethereum [json-rpc](https://github.com/ethereum/wiki/wiki/JSON-RPC) api.
+For more information about the requests, check out the Ethereum [json-rpc](https://github.com/ethereum/wiki/wiki/JSON-RPC) api.
