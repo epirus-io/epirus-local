@@ -42,7 +42,7 @@ This project relies on [web3-evm](https://github.com/web3j/web3j-evm) to execute
 ```
 epirus-local start -d=/path/to/directory -p=9090
 ```
-this command generates a new genesis file with 10 accounts filled with 100 ether via providing a directory where to put it.
+This command generates a new genesis file with 10 accounts filled with 100 ether.
 
 ![start command](https://raw.githubusercontent.com/epirus-io/epirus-local/master/resources/epirus-local-start-command-demo.gif)
 
